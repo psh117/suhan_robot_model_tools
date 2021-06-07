@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>suhan_robot_model_tools</name>
+  <version>0.1.0</version>
+  <description>The suhan_robot_model_tools package</description>
+
+  <maintainer email="psh117@snu.ac.kr">Suhan Park</maintainer>
+
+  <license>MIT</license>
+
+  <depend>roscpp</depend>
+  <depend>rospy</depend>
+  <depend>std_msgs</depend>
+  <depend>moveit_core</depend>
+  <depend>moveit_visual_tools</depend>
+  <depend>trac_ik_lib</depend>
+  <depend>eigenpy</depend>
+  <depend>roslib</depend>
+
+  <test_depend>gtest</test_depend>
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <export>
+  </export>
+</package>

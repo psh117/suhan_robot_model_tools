@@ -1,0 +1,8 @@
+.vscode/
+*.pyc
+*.txt
+*.dot
+core
+ik_db.yaml
+output
+tmp
