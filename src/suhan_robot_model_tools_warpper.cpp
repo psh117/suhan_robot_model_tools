@@ -27,6 +27,8 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
       .def("function", &DualChainConstraintsFunctions::function)
       .def("set_chain", &DualChainConstraintsFunctions::setChain)
       .def("set_names", &DualChainConstraintsFunctions::setNames)
+      .def("set_tolerance", &DualChainConstraintsFunctions::setTolerance)
+      .def("set_max_iterations", &DualChainConstraintsFunctions::setMaxIterations)
       ;
 
 }

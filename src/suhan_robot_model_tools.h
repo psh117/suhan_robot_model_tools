@@ -18,11 +18,13 @@ public:
   void jacobian(const Eigen::Ref<const Eigen::VectorXd> &x, Eigen::Ref<Eigen::MatrixXd> out);
   virtual void function(const Eigen::Ref<const Eigen::VectorXd> &x,
                                     Eigen::Ref<Eigen::VectorXd> out) = 0;
+  void setTolerance(double tolerance);
+  void setMaxIterations(int maxIterations);
 protected:
   std::map<std::string, TRACIKAdapterPtr> robot_models_;
   Eigen::VectorXd q_;
   unsigned int n_; ///< dim of q_
-  double tolerance_{1e-5};
+  double tolerance_{1e-3};
   int maxIterations_{1000};
 };
 

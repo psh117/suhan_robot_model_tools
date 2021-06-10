@@ -11,6 +11,16 @@ TRACIKAdapter & KinematicsConstraintsFunctions::getTRACIKAdapter(const std::stri
   return *robot_models_[name];
 }
 
+void KinematicsConstraintsFunctions::setTolerance(double tolerance)
+{
+  tolerance_ = tolerance;
+}
+
+void KinematicsConstraintsFunctions::setMaxIterations(int maxIterations)
+{
+  maxIterations_ = maxIterations;
+}
+
 void KinematicsConstraintsFunctions::jacobian(const Eigen::Ref<const Eigen::VectorXd> &x, Eigen::Ref<Eigen::MatrixXd> out) 
 {
     Eigen::VectorXd y1 = x;
@@ -75,14 +85,15 @@ void DualChainConstraintsFunctions::setNames(const std::string & name1, const st
   names_[0] = name1;
   names_[1] = name2;
 
+  n_ = 0;
   for (int i=0; i<2; ++i)
   {
     q_lengths_[i] = robot_models_[names_[i]]->getNumJoints();
+    n_ += q_lengths_[i];
   }
-
   std::cout << names_[0] << " and " << names_[1] << std::endl
   << "q len: " << q_lengths_[0] << " and " << q_lengths_[1] << std::endl;
-  
+
 }
 
 void DualChainConstraintsFunctions::setChain(const Eigen::Ref<const Eigen::Vector3d> &pos, const Eigen::Ref<const Eigen::Vector4d> &quat){
