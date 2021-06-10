@@ -41,21 +41,22 @@ q_goal = [-1.53003348, -1.3897195,   0.66266431, -0.6554421,  -0.70950444, -1.38
           
 q_start, q_goal = np.array(q_start), np.array(q_goal)
 
-thresh = 3.9
+thresh = 1.5
 q_start_sim = []
 q_goal_sim = []
 
 print (len (q_dataset))
-sq = set(q_dataset)
-print (len (sq))
+# sq = set(q_dataset)
+# print (len (sq))
 # while rospy.is_shutdown() is False:
-# for q in q_dataset:
-#     if rospy.is_shutdown():
-#         break
-#     q = np.array(q)
-#     if np.linalg.norm(q-q_start) < thresh:
-#       q_start_sim.append(q)
-#       print(q_start_sim)
+for q in q_dataset:
+    if rospy.is_shutdown():
+        break
+    q = np.array(q)
+    # print(q)
+    if np.linalg.norm(q-q_start) < thresh:
+      q_start_sim.append(q)
+print(q_start_sim)
     # print(np.linalg.norm(q-q_start))
     # if np.linalg.norm(q-q_goal) < thresh:
     #   q_goal_sim.append(q)

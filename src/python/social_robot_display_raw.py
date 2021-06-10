@@ -31,7 +31,7 @@ msg.position = pos
 msg.velocity = [0.0] * 32
 msg.effort = [0.0] * 32
 
-q_dataset = pickle.load(open('q_dataset_0.325_ver2.pkl','rb'))
+q_dataset = pickle.load(open('q_out_for_viz_social.pkl','rb'))
 
 # while rospy.is_shutdown() is False:
 for q in q_dataset:
@@ -42,7 +42,7 @@ for q in q_dataset:
     msg.header.stamp = rospy.Time.now()
     pub.publish(msg)
     print(q)
-    rospy.sleep(0.1)
+    rospy.sleep(0.5)
 # print(joints[left_start_idx])
 # print(joints[right_start_idx])
 # print(len(joints))
