@@ -15,7 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   roslib
 )
 
-find_package(Boost REQUIRED COMPONENTS python)
+# find_package(Boost REQUIRED COMPONENTS python)
 find_package(PythonLibs 2.7 REQUIRED)
 
 find_package(ompl REQUIRED)
