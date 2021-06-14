@@ -19,9 +19,9 @@ class TRACIKAdapter
 public:
   TRACIKAdapter(const std::string& base_link, const std::string& tip_link, const std::string& URDF_param = "/robot_description");
   bool solve(const Eigen::Ref<const Eigen::VectorXd> &q0, const Eigen::Isometry3d & transform, Eigen::Ref<Eigen::VectorXd> solution);
+  bool solve(const Eigen::Isometry3d & transform, Eigen::Ref<Eigen::VectorXd> solution);
   Eigen::Isometry3d forwardKinematics(const Eigen::Ref<const Eigen::VectorXd> &q);
 
-  bool solve(const Eigen::Isometry3d & transform, Eigen::Ref<Eigen::VectorXd> solution);
   Eigen::VectorXd getRandomConfig();
   Eigen::VectorXd getGaussianRandomConfig(const Eigen::Ref<const Eigen::VectorXd> &q0, double sigma = 0.1);
   Eigen::VectorXd getGaussianRandomConfig(double sigma);
