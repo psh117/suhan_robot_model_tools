@@ -58,7 +58,7 @@ KDL::Frame getKDLFrame(const Eigen::Isometry3d & transform)
 }
 
 TRACIKAdapter::TRACIKAdapter(const std::string& base_link, const std::string& tip_link, const std::string& URDF_param)
- : trac_ik_solver_(base_link, tip_link, URDF_param)
+ : trac_ik_solver_(base_link, tip_link, URDF_param, 1.0, 1e-2) // TRAC_IK::Speed
 { 
   std::scoped_lock _lock(iK_solver_mutex_);
   last_transform_.setIdentity(); 
@@ -191,6 +191,7 @@ bool TRACIKAdapter::solve(const Eigen::Ref<const Eigen::VectorXd> &q0, const Eig
     solution = result_q.data;
     return true;
   }
+  solution = result_q.data;
   return false;
 }
 
