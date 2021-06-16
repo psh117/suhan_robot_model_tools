@@ -165,6 +165,19 @@ bool TRACIKAdapter::randomStrictSolve(const Eigen::Isometry3d & transform, Eigen
   return solve(getStrictRandomConfig(margin), transform, solution);
 }
 
+void TRACIKAdapter::setBounds(const Eigen::Ref<const Eigen::VectorXd> &lb, const Eigen::Ref<const Eigen::VectorXd> &ub)
+{
+  KDL::JntArray ll, ul; //lower joint limits, upper joint limits
+  bool valid = trac_ik_solver_.getKDLLimits(ll, ul);
+  ll.data = lb;
+  ul.data = ub;
+  bool valid = trac_ik_solver_.setKDLLimits(ll,ul);
+  if (!valid)
+  {
+    ROS_ERROR("setting bounds fails");
+  }
+}
+
 bool TRACIKAdapter::isValid(const Eigen::Ref<const Eigen::VectorXd> &q)
 {
   for (int i=0; i<lb_.size(); i++)

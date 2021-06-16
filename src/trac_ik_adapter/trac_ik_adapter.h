@@ -32,6 +32,7 @@ public:
   bool randomStrictSolve(const Eigen::Isometry3d & transform, Eigen::Ref<Eigen::VectorXd> solution, double margin);
   Eigen::VectorXd getLowerBound() const { return lb_; }
   Eigen::VectorXd getUpperBound() const { return ub_; }
+  void setBounds(const Eigen::Ref<const Eigen::VectorXd> &lb, const Eigen::Ref<const Eigen::VectorXd> &ub)
   unsigned int getNumJoints() const { return n_joint_; }
   bool isValid(const Eigen::Ref<const Eigen::VectorXd> &q);
 

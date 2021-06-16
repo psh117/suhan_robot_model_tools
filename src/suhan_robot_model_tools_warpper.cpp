@@ -32,6 +32,7 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
       .def("is_valid", &TRACIKAdapter::isValid)
       .def("solve", solve1)
       .def("forward_kinematics", &TRACIKAdapter::forwardKinematics)
+      .def("set_bounds", &TRACIKAdapter::setBounds)
       ;
 
   bp::class_<DualChainConstraintsFunctions, boost::noncopyable>("DualChainConstraintsFunctions")
