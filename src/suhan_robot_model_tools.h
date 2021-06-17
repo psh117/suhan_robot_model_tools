@@ -36,11 +36,13 @@ public:
 
   void setChain(const Eigen::Ref<const Eigen::Vector3d> &pos, const Eigen::Ref<const Eigen::Vector4d> &quat);
   void setNames(const std::string & name1, const std::string & name2);
-
+  void setRotErrorRatio(double ratio);
+  
 private:
   Eigen::Isometry3d chain_transform_;
   std::array<std::string, 2> names_;
   std::array<int,2> q_lengths_;
+  double rot_error_ratio_ {1.0};
 
 };
 

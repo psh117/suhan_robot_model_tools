@@ -118,5 +118,10 @@ void DualChainConstraintsFunctions::function(const Eigen::Ref<const Eigen::Vecto
   double err_r = current_quat.angularDistance(init_quat);
   double err_p = (current_chain.translation() - chain_transform_.translation()).norm();
   
-  out[0] = err_p + err_r;
+  out[0] = err_p + err_r * rot_error_ratio_;
+}
+
+void DualChainConstraintsFunctions::setRotErrorRatio(double ratio)
+{
+  rot_error_ratio_ = ratio;
 }
