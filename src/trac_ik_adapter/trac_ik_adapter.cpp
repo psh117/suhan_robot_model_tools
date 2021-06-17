@@ -171,7 +171,7 @@ void TRACIKAdapter::setBounds(const Eigen::Ref<const Eigen::VectorXd> &lb, const
   bool valid = trac_ik_solver_.getKDLLimits(ll, ul);
   ll.data = lb;
   ul.data = ub;
-  bool valid = trac_ik_solver_.setKDLLimits(ll,ul);
+  valid = trac_ik_solver_.setKDLLimits(ll,ul);
   if (!valid)
   {
     ROS_ERROR("setting bounds fails");
