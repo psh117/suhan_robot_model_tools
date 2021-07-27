@@ -17,7 +17,7 @@ KDL::Frame getKDLFrame(const Eigen::Isometry3d & transform);
 class TRACIKAdapter
 {
 public:
-  TRACIKAdapter(const std::string& base_link, const std::string& tip_link, const std::string& URDF_param = "/robot_description");
+  TRACIKAdapter(const std::string& base_link, const std::string& tip_link, double max_time, double precision, const std::string& URDF_param = "/robot_description");
   bool solve(const Eigen::Ref<const Eigen::VectorXd> &q0, const Eigen::Isometry3d & transform, Eigen::Ref<Eigen::VectorXd> solution);
   bool solve(const Eigen::Isometry3d & transform, Eigen::Ref<Eigen::VectorXd> solution);
   Eigen::Isometry3d forwardKinematics(const Eigen::Ref<const Eigen::VectorXd> &q);
@@ -33,6 +33,7 @@ public:
   Eigen::VectorXd getLowerBound() const { return lb_; }
   Eigen::VectorXd getUpperBound() const { return ub_; }
   void setBounds(const Eigen::Ref<const Eigen::VectorXd> &lb, const Eigen::Ref<const Eigen::VectorXd> &ub);
+  void setToleranceBounds(double px, double py, double pz, double ox, double oy, double oz);
   unsigned int getNumJoints() const { return n_joint_; }
   bool isValid(const Eigen::Ref<const Eigen::VectorXd> &q);
 
@@ -50,6 +51,7 @@ protected:
   TRAC_IK::TRAC_IK trac_ik_solver_;
   std::unique_ptr<KDL::ChainFkSolverPos_recursive> fk_solver_;
   KDL::Chain chain_;
+  KDL::Twist bounds_;
 };
 
 

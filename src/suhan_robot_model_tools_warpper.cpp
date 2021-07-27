@@ -25,7 +25,7 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
     (const Eigen::Ref<const Eigen::VectorXd> &q0, const Eigen::Isometry3d & transform, Eigen::Ref<Eigen::VectorXd> solution) 
     = &TRACIKAdapter::solve;
 
-  bp::class_<TRACIKAdapter, boost::noncopyable>("TRACIKAdapter", bp::init<const std::string& , const std::string& , const std::string&>())
+  bp::class_<TRACIKAdapter, boost::noncopyable>("TRACIKAdapter", bp::init<const std::string& , const std::string&, double, double, const std::string&>())
       .def("get_lower_bound", &TRACIKAdapter::getLowerBound)
       .def("get_upper_bound", &TRACIKAdapter::getUpperBound)
       .def("get_num_joints", &TRACIKAdapter::getNumJoints)
@@ -33,6 +33,7 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
       .def("solve", solve1)
       .def("forward_kinematics", &TRACIKAdapter::forwardKinematics)
       .def("set_bounds", &TRACIKAdapter::setBounds)
+      .def("set_tolerance_bounds", &TRACIKAdapter::setToleranceBounds)
       ;
 
   bp::class_<DualChainConstraintsFunctions, boost::noncopyable>("DualChainConstraintsFunctions")
@@ -45,6 +46,7 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
       .def("set_names", &DualChainConstraintsFunctions::setNames)
       .def("set_tolerance", &DualChainConstraintsFunctions::setTolerance)
       .def("set_max_iterations", &DualChainConstraintsFunctions::setMaxIterations)
+      .def("set_num_finite_diff", &DualChainConstraintsFunctions::setNumFiniteDiff)
       .def("set_rot_error_ratio", &DualChainConstraintsFunctions::setRotErrorRatio)
       ;
 }

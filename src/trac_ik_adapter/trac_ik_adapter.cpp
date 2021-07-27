@@ -57,8 +57,12 @@ KDL::Frame getKDLFrame(const Eigen::Isometry3d & transform)
   return frame;
 }
 
-TRACIKAdapter::TRACIKAdapter(const std::string& base_link, const std::string& tip_link, const std::string& URDF_param)
- : trac_ik_solver_(base_link, tip_link, URDF_param, 3.0, 2e-3) // TRAC_IK::Speed
+TRACIKAdapter::TRACIKAdapter(const std::string& base_link, 
+                             const std::string& tip_link, 
+                             double max_time, double precision,
+                             const std::string& URDF_param)
+ : trac_ik_solver_(base_link, tip_link, URDF_param, max_time, precision) 
+                                  // 0.2, 1e-4 TRAC_IK::Speed
 { 
   std::scoped_lock _lock(iK_solver_mutex_);
   last_transform_.setIdentity(); 
@@ -178,6 +182,16 @@ void TRACIKAdapter::setBounds(const Eigen::Ref<const Eigen::VectorXd> &lb, const
   }
 }
 
+void TRACIKAdapter::setToleranceBounds(double px, double py, double pz, double ox, double oy, double oz)
+{
+  bounds_.vel(0) = px;
+  bounds_.vel(1) = py;
+  bounds_.vel(2) = pz;
+  bounds_.rot(0) = ox;
+  bounds_.rot(1) = oy;
+  bounds_.rot(2) = oz;
+}
+
 bool TRACIKAdapter::isValid(const Eigen::Ref<const Eigen::VectorXd> &q)
 {
   for (int i=0; i<lb_.size(); i++)
@@ -199,7 +213,12 @@ bool TRACIKAdapter::solve(const Eigen::Ref<const Eigen::VectorXd> &q0, const Eig
   jarr_q0.data = q0;
 
   target_frame = getKDLFrame(transform);
-  if (trac_ik_solver_.CartToJnt(jarr_q0, target_frame, result_q) >= 0)
+  KDL::Twist bounds;
+  // 1e-1
+  // bounds.rot(0) = 1e-1;
+  // bounds.rot(1) = 1e-1;
+  // bounds.rot(2) = 1e-1;
+  if (trac_ik_solver_.CartToJnt(jarr_q0, target_frame, result_q, bounds_) >= 0)
   {
     solution = result_q.data;
     return true;
