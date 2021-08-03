@@ -49,4 +49,18 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
       .def("set_num_finite_diff", &DualChainConstraintsFunctions::setNumFiniteDiff)
       .def("set_rot_error_ratio", &DualChainConstraintsFunctions::setRotErrorRatio)
       ;
+      
+  bp::class_<TripleChainConstraintsFunctions, boost::noncopyable>("TripleChainConstraintsFunctions")
+      .def("add_trac_ik_adapter", &TripleChainConstraintsFunctions::addTRACIKAdapter, bp::return_internal_reference<>())
+      .def("get_trac_ik_adapter", &TripleChainConstraintsFunctions::getTRACIKAdapter, bp::return_internal_reference<>())
+      .def("project", &TripleChainConstraintsFunctions::project)
+      .def("jacobian", &TripleChainConstraintsFunctions::jacobian)
+      .def("function", &TripleChainConstraintsFunctions::function)
+      .def("set_chain", &TripleChainConstraintsFunctions::setChain)
+      .def("set_names", &TripleChainConstraintsFunctions::setNames)
+      .def("set_tolerance", &TripleChainConstraintsFunctions::setTolerance)
+      .def("set_max_iterations", &TripleChainConstraintsFunctions::setMaxIterations)
+      .def("set_num_finite_diff", &TripleChainConstraintsFunctions::setNumFiniteDiff)
+      .def("set_rot_error_ratio", &TripleChainConstraintsFunctions::setRotErrorRatio)
+      ;
 }
