@@ -1,5 +1,8 @@
 #include "suhan_robot_model_tools.h"
 
+const std::string cgreen{"\033[0;32m"};
+const std::string creset{"\033[0m"};
+
 TRACIKAdapter & KinematicsConstraintsFunctions::addTRACIKAdapter(const std::string & name, const std::string & base_link, const std::string & tip_link, double max_time, double precision, const std::string& URDF_param)
 {
   robot_models_[name] = std::make_shared<TRACIKAdapter>(base_link, tip_link, max_time, precision, URDF_param);
@@ -195,6 +198,17 @@ void TripleChainConstraintsFunctions::setChain(
 
   chain_transform_[0] = t1.inverse() * t2;
   chain_transform_[1] = t1.inverse() * t3;
+  std::cout << cgreen << "[info] chain is successfully registered"  << creset << std::endl
+            << "[t1]" << std::endl 
+            << t1.matrix() << std::endl
+            << "[t2]" << std::endl 
+            << t2.matrix() << std::endl
+            << "[t3]" << std::endl 
+            << t3.matrix() << std::endl
+            << "[chain_transform_[0]]" << std::endl 
+            << chain_transform_[0].matrix() << std::endl
+            << "[chain_transform_[1]]" << std::endl 
+            << chain_transform_[1].matrix() << std::endl;
 }
 
 void TripleChainConstraintsFunctions::function(const Eigen::Ref<const Eigen::VectorXd> &x,
@@ -205,7 +219,7 @@ void TripleChainConstraintsFunctions::function(const Eigen::Ref<const Eigen::Vec
   auto & model3 = robot_models_[names_[2]];
 
   const Eigen::Ref<const Eigen::VectorXd> q1 = x.head(q_lengths_[0]);
-  const Eigen::Ref<const Eigen::VectorXd> q2 = x.tail(q_lengths_[1]); 
+  const Eigen::Ref<const Eigen::VectorXd> q2 = x.segment(q_lengths_[0], q_lengths_[1]); 
   const Eigen::Ref<const Eigen::VectorXd> q3 = x.tail(q_lengths_[2]);
 
   auto t1 = model1->forwardKinematics(q1);
@@ -214,6 +228,17 @@ void TripleChainConstraintsFunctions::function(const Eigen::Ref<const Eigen::Vec
   
   Eigen::Isometry3d current_chain_1 = t1.inverse() * t2;
   Eigen::Isometry3d current_chain_2 = t1.inverse() * t3;
+  // std::cout << "[deb] current_chain" << std::endl
+  //           << "[t1]" << std::endl 
+  //           << t1.matrix() << std::endl
+  //           << "[t2]" << std::endl 
+  //           << t2.matrix() << std::endl
+  //           << "[t3]" << std::endl 
+  //           << t3.matrix() << std::endl
+  //           << "[current_chain_1]" << std::endl 
+  //           << current_chain_1.matrix() << std::endl
+  //           << "[current_chain_2]" << std::endl 
+  //           << current_chain_2.matrix() << std::endl;
   auto d = [this](const Eigen::Isometry3d & current_chain, const Eigen::Isometry3d & chain_transform){
     Eigen::Quaterniond current_quat(current_chain.linear());
     Eigen::Quaterniond init_quat(chain_transform.linear());
