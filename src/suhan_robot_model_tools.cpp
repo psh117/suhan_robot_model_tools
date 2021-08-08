@@ -244,9 +244,9 @@ void TripleChainConstraintsFunctions::function(const Eigen::Ref<const Eigen::Vec
     Eigen::Quaterniond init_quat(chain_transform.linear());
 
     double err_r = current_quat.angularDistance(init_quat);
-    double err_p = (current_chain.translation() - chain_transform.translation()).norm();
+    double err_p = (current_chain.translation() - chain_transform.translation()).squaredNorm();
     
-    return err_r + err_p * this->rot_error_ratio_;
+    return err_r * err_r + err_p * this->rot_error_ratio_;
   };
 
   out[0] = d(current_chain_1, chain_transform_[0]) + 
