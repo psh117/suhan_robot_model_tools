@@ -13,6 +13,8 @@ find_package(catkin REQUIRED COMPONENTS
   trac_ik_lib
   eigenpy
   roslib
+  moveit_ros_planning
+  moveit_ros_planning_interface
 )
 
 # find_package(Boost REQUIRED COMPONENTS python)
@@ -43,12 +45,14 @@ include_directories(
  ${Boost_INCLUDE_DIRS}
 #  ${RBDL_INCLUDE_DIR}
  ${OMPL_INCLUDE_DIRS}
+ src
 )
 
 add_library(suhan_robot_model_tools
   src/suhan_robot_model_tools.cpp
   src/trac_ik_adapter/trac_ik_adapter.cpp
   src/eigen_tools/eigen_tools.cpp
+  src/collision_checker/planning_scene_collision_check.cpp
 )
 
 add_library(suhan_robot_model_tools_wrapper_cpp src/suhan_robot_model_tools_warpper.cpp)

@@ -5,6 +5,7 @@
 #include <eigenpy/eigenpy.hpp>
 #include "suhan_robot_model_tools.h"
 #include "eigen_tools/eigen_tools.h"
+#include "collision_checker/planning_scene_collision_check.h"
 
 BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
 {
@@ -19,6 +20,9 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
   bp::def("vectors_to_isometry",vectorsToIsometry);
   bp::def("isometry_to_vectors",isometryToVectors);
 
+  bp::class_<std::vector<std::string> > ("NameVector")
+    .def(boost::python::vector_indexing_suite<std::vector<std::string> >())
+  ;
   bp::class_<Eigen::Isometry3d>("Isometry3d");
 
   bool (TRACIKAdapter::*solve1)
@@ -62,5 +66,11 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
       .def("set_max_iterations", &TripleChainConstraintsFunctions::setMaxIterations)
       .def("set_num_finite_diff", &TripleChainConstraintsFunctions::setNumFiniteDiff)
       .def("set_rot_error_ratio", &TripleChainConstraintsFunctions::setRotErrorRatio)
+      ;
+
+
+  bp::class_<PlanningSceneCollisionCheck, boost::noncopyable>("PlanningSceneCollisionCheck")
+      .def("set_arm_names", &PlanningSceneCollisionCheck::setArmNames)
+      .def("is_valid", &PlanningSceneCollisionCheck::isValid)
       ;
 }

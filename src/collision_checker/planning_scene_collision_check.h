@@ -66,9 +66,6 @@ public:
   void changeCollisions(const std::string &name1, const std::vector< std::string > &other_names, bool allowed);
   void changeCollisionsAll(const std::string &name1, bool allowed);
   Eigen::Isometry3d geometry_pose_to_isometry(geometry_msgs::Pose geometry_pose);
-  void cellChecker(const Eigen::Ref<const Eigen::Vector3d> &s_pos, const Eigen::Ref<const Eigen::Vector4d> &quat, const Eigen::Ref<const Eigen::Vector3d> &mat_size,
-                  const Eigen::Ref<const Eigen::Vector3d> &world_size, const bool visual, const std::string object_id, Eigen::Ref<Eigen::VectorXd> occupancy_map); // for checking obstacle's existance in world diveded into small cells
-  void cellChecker(const std::string object_id, const bool visual, Eigen::Ref<Eigen::VectorXd> occupancy_map);
 
   bool getArmInCollision(const std::string & arm_name, std::string & collision_arm);
   std::string getCollidingArm(const std::vector<std::string> & arm_names);
