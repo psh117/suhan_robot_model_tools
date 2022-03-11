@@ -72,5 +72,7 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
   bp::class_<PlanningSceneCollisionCheck, boost::noncopyable>("PlanningSceneCollisionCheck")
       .def("set_arm_names", &PlanningSceneCollisionCheck::setArmNames)
       .def("is_valid", &PlanningSceneCollisionCheck::isValid)
+      .def("publish_planning_scene_msg", &PlanningSceneCollisionCheck::publishPlanningSceneMsg)
+      .def("print_current_collision_infos", &PlanningSceneCollisionCheck::printCurrentCollisionInfos)
       ;
 }
