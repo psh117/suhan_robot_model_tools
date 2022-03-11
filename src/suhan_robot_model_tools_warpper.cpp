@@ -24,7 +24,7 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
     .def(boost::python::vector_indexing_suite<std::vector<std::string> >())
   ;
 
-  bp::class_<std::vector<std::string> > ("IntVector")
+  bp::class_<std::vector<int> > ("IntVector")
     .def(boost::python::vector_indexing_suite<std::vector<int> >())
   ;
   bp::class_<Eigen::Isometry3d>("Isometry3d");
