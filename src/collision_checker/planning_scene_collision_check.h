@@ -25,7 +25,7 @@ class PlanningSceneCollisionCheck
 {
 public:
   PlanningSceneCollisionCheck();
-  void setArmNames(const std::vector<std::string> &arm_name);
+  void setGroupNamesAndDofs(const std::vector<std::string> &arm_name, const std::vector<int> & dofs);
   bool isValid(const Eigen::Ref<const Eigen::VectorXd> &q) const;
   double clearance(const Eigen::Ref<const Eigen::VectorXd> &q) const;
 
@@ -47,7 +47,7 @@ public:
   void addCylinder(const Eigen::Ref<const Eigen::Vector2d> &dim, const std::string &id,
               const Eigen::Ref<const Eigen::Vector3d> &pos, const Eigen::Ref<const Eigen::Vector4d> &quat);
 
-  void addCylinder(const Eigen::Ref<const Eigen::Vector2d> &dim, geometry_msgs::Pose pose, const std::string &id);
+  void addCyl inder(const Eigen::Ref<const Eigen::Vector2d> &dim, geometry_msgs::Pose pose, const std::string &id);
 
   void addSphere(const double &dim, const std::string &id,
               const Eigen::Ref<const Eigen::Vector3d> &pos, const Eigen::Ref<const Eigen::Vector4d> &quat);
@@ -67,14 +67,12 @@ public:
   void changeCollisionsAll(const std::string &name1, bool allowed);
   Eigen::Isometry3d geometry_pose_to_isometry(geometry_msgs::Pose geometry_pose);
 
-  bool getArmInCollision(const std::string & arm_name, std::string & collision_arm);
-  std::string getCollidingArm(const std::vector<std::string> & arm_names);
-
   moveit_msgs::PlanningScene getPlanningSceneMsg();
   void publishPlanningSceneMsg();
 
   void printCurrentCollisionInfos();
   std::stringstream streamCurrentCollisionInfos();
+  void setJointGroupPositions(const std::string& name, const Eigen::Ref<const Eigen::VectorXd> &q);
 
   void openDebugFile() { debug_file_.open( debug_file_prefix_ + "planning_scene_debug.txt"); }
   void setDebugFilePrefix(const std::string &name) { debug_file_prefix_ = name; }
@@ -82,7 +80,7 @@ public:
   planning_scene::PlanningScenePtr& getPlanningScene();
 
 private:
-  std::vector<std::string> arm_name_;
+  std::vector<std::pair<std::string,int>> group_infos_;
   // std::array<std::string, 2> move_group_names_ {"panda_left", "panda_right"};
   robot_model::RobotModelPtr robot_model_;
   planning_scene::PlanningScenePtr planning_scene_;

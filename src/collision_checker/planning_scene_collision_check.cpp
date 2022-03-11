@@ -9,9 +9,19 @@ PlanningSceneCollisionCheck::PlanningSceneCollisionCheck()
   // acm_ = std::make_shared<collision_detection::AllowedCollisionMatrix>(planning_scene_->getAllowedCollisionMatrix());
 };
 
-void PlanningSceneCollisionCheck::setArmNames(const std::vector<std::string> &arm_name)
+void PlanningSceneCollisionCheck::setGroupNamesAndDofs(const std::vector<std::string> &arm_name, const std::vector<int> & dofs)
 {
-  arm_name_ = arm_name;  
+  assert(arm_name.size() == dofs.size());
+
+  int len_groups = arm_name.size();
+  group_infos_.resize(len_groups);
+
+  for (int i=0; i<len_groups; ++i)
+  {
+    group_infos_[i].first = arm_name[i];
+    group_infos_[i].second = dofs[i];
+  }
+
 }
 
 bool PlanningSceneCollisionCheck::isValid(const Eigen::Ref<const Eigen::VectorXd> &q) const
@@ -22,18 +32,23 @@ bool PlanningSceneCollisionCheck::isValid(const Eigen::Ref<const Eigen::VectorXd
   collision_request.contacts = true;
   robot_state::RobotState current_state = planning_scene_->getCurrentState();
   
-  for (int i=0; i<arm_name_.size(); i++)
+  int current_seg_index = 0;
+  for (auto & group_info : group_infos_)
   {
-    const auto & q_seg = q.segment<7>(i*7);
-    const std::vector<double> joint_values(q_seg.data(), q_seg.data() + 7);
-    const robot_model::JointModelGroup* joint_model_group = current_state.getJointModelGroup(arm_name_[i]);
+    int dof = group_info.second;
+    const auto & q_seg = q.segment(current_seg_index, dof);
+    const std::vector<double> joint_values(q_seg.data(), q_seg.data() + dof);
+    const robot_model::JointModelGroup* joint_model_group = current_state.getJointModelGroup(group_info.first);
     current_state.setJointGroupPositions(joint_model_group, joint_values);
+    current_seg_index += dof;
   }
-  Eigen::Vector2d gpos;
-  gpos << 0.04, 0.04;
-  current_state.setJointGroupPositions("hand_left", gpos);
-  current_state.setJointGroupPositions("hand_right", gpos);
-  current_state.setJointGroupPositions("hand_top", gpos);
+  // for (int i=0; i<arm_name_.size(); i++)
+  // {
+  //   const auto & q_seg = q.segment<7>(i*7);
+  //   const std::vector<double> joint_values(q_seg.data(), q_seg.data() + 7);
+  //   const robot_model::JointModelGroup* joint_model_group = current_state.getJointModelGroup(arm_name_[i]);
+  //   current_state.setJointGroupPositions(joint_model_group, joint_values);
+  // }
   planning_scene_->checkCollision(collision_request, collision_result, current_state);
 
   last_collision_result_ = collision_result; 
@@ -45,6 +60,13 @@ bool PlanningSceneCollisionCheck::isValid(const Eigen::Ref<const Eigen::VectorXd
   return !collision_result.collision;
 }
 
+void PlanningSceneCollisionCheck::setJointGroupPositions(const std::string& name, const Eigen::Ref<const Eigen::VectorXd> &q)
+{
+  std::scoped_lock _lock(planning_scene_mtx_);
+  robot_state::RobotState & current_state = planning_scene_->getCurrentStateNonConst();
+  current_state.setJointGroupPositions(name, q);
+}
+
 double PlanningSceneCollisionCheck::clearance(const Eigen::Ref<const Eigen::VectorXd> &q) const
 {
   std::scoped_lock _lock(planning_scene_mtx_);
@@ -53,20 +75,25 @@ double PlanningSceneCollisionCheck::clearance(const Eigen::Ref<const Eigen::Vect
   collision_request.contacts = true;
   collision_request.distance = true;
   robot_state::RobotState current_state = planning_scene_->getCurrentState();
-  
-  for (int i=0; i<arm_name_.size(); i++)
+
+  int current_seg_index = 0;
+  for (auto & group_info : group_infos_)
   {
-    const auto & q_seg = q.segment<7>(i*7);
-    const std::vector<double> joint_values(q_seg.data(), q_seg.data() + 7);
-    const robot_model::JointModelGroup* joint_model_group = current_state.getJointModelGroup(arm_name_[i]);
+    int dof = group_info.second;
+    const auto & q_seg = q.segment(current_seg_index, dof);
+    const std::vector<double> joint_values(q_seg.data(), q_seg.data() + dof);
+    const robot_model::JointModelGroup* joint_model_group = current_state.getJointModelGroup(group_info.first);
     current_state.setJointGroupPositions(joint_model_group, joint_values);
+    current_seg_index += dof;
   }
 
-  Eigen::Vector2d gpos;
-  gpos << 0.04, 0.04;
-  current_state.setJointGroupPositions("hand_left", gpos);
-  current_state.setJointGroupPositions("hand_right", gpos);
-  current_state.setJointGroupPositions("hand_top", gpos);
+  // for (int i=0; i<arm_name_.size(); i++)
+  // {
+  //   const auto & q_seg = q.segment<7>(i*7);
+  //   const std::vector<double> joint_values(q_seg.data(), q_seg.data() + 7);
+  //   const robot_model::JointModelGroup* joint_model_group = current_state.getJointModelGroup(arm_name_[i]);
+  //   current_state.setJointGroupPositions(joint_model_group, joint_values);
+  // }
   planning_scene_->checkCollision(collision_request, collision_result, current_state);
 
   last_collision_result_ = collision_result; 
@@ -84,20 +111,25 @@ void PlanningSceneCollisionCheck::updateJoints(const Eigen::Ref<const Eigen::Vec
   std::scoped_lock _lock(planning_scene_mtx_);
   // std::cout << "void updateJoints(const Eigen::Ref<const Eigen::VectorXd> &q)" << std::endl;
   robot_state::RobotState & current_state = planning_scene_->getCurrentStateNonConst();
-  for (int i=0; i<arm_name_.size(); i++)
+
+  int current_seg_index = 0;
+  for (auto & group_info : group_infos_)
   {
-    Eigen::Matrix<double, 7, 1> q_seg = q.segment<7>(i*7);
-    // std::vector<double> joint_values(q_seg.data(), q_seg.data() + 7);
-    // const robot_model::JointModelGroup* joint_model_group = current_state.getJointModelGroup(arm_name_[i]);
-    // current_state.setJointGroupPositions(joint_model_group, joint_values);
-    // std::cout << arm_name_[i] << ": " << q_seg.transpose() << std::endl;
-    current_state.setJointGroupPositions(arm_name_[i], q_seg);
-  };
-  Eigen::Vector2d gpos;
-  gpos << 0.04, 0.04;
-  current_state.setJointGroupPositions("hand_left", gpos);
-  current_state.setJointGroupPositions("hand_right", gpos);
-  current_state.setJointGroupPositions("hand_top", gpos);
+    int dof = group_info.second;
+    const auto & q_seg = q.segment(current_seg_index, dof);
+    current_state.setJointGroupPositions(group_info.first, q_seg);
+    current_seg_index += dof;
+  }
+
+  // for (int i=0; i<arm_name_.size(); i++)
+  // {
+  //   Eigen::Matrix<double, 7, 1> q_seg = q.segment<7>(i*7);
+  //   // std::vector<double> joint_values(q_seg.data(), q_seg.data() + 7);
+  //   // const robot_model::JointModelGroup* joint_model_group = current_state.getJointModelGroup(arm_name_[i]);
+  //   // current_state.setJointGroupPositions(joint_model_group, joint_values);
+  //   // std::cout << arm_name_[i] << ": " << q_seg.transpose() << std::endl;
+  //   current_state.setJointGroupPositions(arm_name_[i], q_seg);
+  // };
   // planning_scene_->setCurrentState(current_state);
 }
 
@@ -364,121 +396,6 @@ Eigen::Isometry3d PlanningSceneCollisionCheck::geometry_pose_to_isometry(geometr
   return transform_;
 }
 
-bool PlanningSceneCollisionCheck::getArmInCollision(const std::string & arm_name, std::string & collision_arm)
-{
-  collision_detection::CollisionResult collision_result = last_collision_result_;
-  if (collision_result.collision)
-  {
-    for (auto & contact : collision_result.contacts)
-    {
-      std::string collision_link;
-      if (contact.first.first.find(arm_name) != std::string::npos)
-      {
-        collision_link = contact.first.second;
-      }
-      else if (contact.first.second.find(arm_name) != std::string::npos)
-      {
-        collision_link = contact.first.first;
-      }
-
-      DEBUG_FILE("contact.first.first: " << contact.first.first);
-      DEBUG_FILE("contact.first.second: " << contact.first.second);
-      DEBUG_FILE("collision_link: " << collision_link);
-
-      int pos;
-      pos = collision_link.find("_hand");
-      if (pos != std::string::npos)
-      {
-        collision_arm = collision_link.substr(0,pos);
-        return true;
-      }
-      pos = collision_link.find("_finger");
-      if (pos != std::string::npos)
-      {
-        collision_arm = collision_link.substr(0,pos);
-        return true;
-      }
-      pos = collision_link.find("_leftfinger");
-      if (pos != std::string::npos)
-      {
-        collision_arm = collision_link.substr(0,pos);
-        return true;
-      }
-      pos = collision_link.find("_rightfinger");
-      if (pos != std::string::npos)
-      {
-        collision_arm = collision_link.substr(0,pos);
-        return true;
-      }
-      pos = collision_link.find("_link");
-      if (pos != std::string::npos)
-      {
-        collision_arm = collision_link.substr(0,pos);
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
-std::string PlanningSceneCollisionCheck::getCollidingArm(const std::vector<std::string> & arm_names)
-{
-  moveit_msgs::AttachedCollisionObject attached_collision_obj;
-  
-  collision_detection::CollisionResult collision_result = last_collision_result_;
-  if (collision_result.collision)
-  {
-    for (auto & contact : collision_result.contacts)
-    {
-      std::string collision_link;
-      if (planning_scene_->getAttachedCollisionObjectMsg(attached_collision_obj, contact.first.first))
-      {
-        collision_link = attached_collision_obj.link_name;
-        for (auto & arm_name : arm_names)
-        {
-          if (collision_link.find(arm_name) != std::string::npos)
-          {
-            return arm_name;
-          }
-          else if (collision_link.find(arm_name) != std::string::npos)
-          {
-            return arm_name;
-          }
-        }
-      }
-      if (planning_scene_->getAttachedCollisionObjectMsg(attached_collision_obj, contact.first.second))
-      {
-        collision_link = attached_collision_obj.link_name;
-        for (auto & arm_name : arm_names)
-        {
-          if (collision_link.find(arm_name) != std::string::npos)
-          {
-            return arm_name;
-          }
-          else if (collision_link.find(arm_name) != std::string::npos)
-          {
-            return arm_name;
-          }
-        }
-      }
-
-      for (auto & arm_name : arm_names)
-      {
-        if (contact.first.first.find(arm_name) != std::string::npos)
-        {
-          return arm_name;
-        }
-        else if (contact.first.second.find(arm_name) != std::string::npos)
-        {
-          return arm_name;
-        }
-      }
-    }
-  }
-  throw std::out_of_range("No arm in collision!");
-  return "";
-}
-
 moveit_msgs::PlanningScene PlanningSceneCollisionCheck::getPlanningSceneMsg()
 {
   moveit_msgs::PlanningScene scene_msgs;
@@ -516,11 +433,6 @@ std::stringstream PlanningSceneCollisionCheck::streamCurrentCollisionInfos()
   collision_request.contacts = true;
   collision_request.distance = false;
   collision_request.verbose = false;
-  Eigen::Vector2d gpos;
-  gpos << 0.04, 0.04;
-  current_state.setJointGroupPositions("hand_left", gpos);
-  current_state.setJointGroupPositions("hand_right", gpos);
-  current_state.setJointGroupPositions("hand_top", gpos);
   planning_scene_->checkCollision(collision_request, collision_result, current_state);
   }
   std::stringstream ss;
