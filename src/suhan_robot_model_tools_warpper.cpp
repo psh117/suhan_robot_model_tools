@@ -72,6 +72,19 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
       .def("set_rot_error_ratio", &TripleChainConstraintsFunctions::setRotErrorRatio)
       ;
 
+  bool (ompl::base::Constraint::*project1)(Eigen::Ref<Eigen::VectorXd> x) const = &ompl::base::Constraint::project;
+
+  void (PlanningSceneCollisionCheck::*addBox1)(const Eigen::Ref<const Eigen::Vector3d> &dim, const std::string &id,
+              const Eigen::Ref<const Eigen::Vector3d> &pos, const Eigen::Ref<const Eigen::Vector4d> &quat) = &PlanningSceneCollisionCheck::addBox;
+
+  void (PlanningSceneCollisionCheck::*addCylinder1)(const Eigen::Ref<const Eigen::Vector2d> &dim, const std::string &id,
+              const Eigen::Ref<const Eigen::Vector3d> &pos, const Eigen::Ref<const Eigen::Vector4d> &quat) = &PlanningSceneCollisionCheck::addCylinder;
+
+  void (PlanningSceneCollisionCheck::*addSphere)(const double &dim, const std::string &id,
+              const Eigen::Ref<const Eigen::Vector3d> &pos, const Eigen::Ref<const Eigen::Vector4d> &quat) = &PlanningSceneCollisionCheck::addSphere;
+
+  void (PlanningSceneCollisionCheck::*addMeshFromFile)(const std::string & file_name, const std::string &id, 
+                       const Eigen::Ref<const Eigen::Vector3d> &pos, const Eigen::Ref<const Eigen::Vector4d> &quat) = &PlanningSceneCollisionCheck::addMeshFromFile;
 
   bp::class_<PlanningSceneCollisionCheck, boost::noncopyable>("PlanningSceneCollisionCheck")
       .def("set_group_names_and_dofs", &PlanningSceneCollisionCheck::setGroupNamesAndDofs)
@@ -79,5 +92,9 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
       .def("publish_planning_scene_msg", &PlanningSceneCollisionCheck::publishPlanningSceneMsg)
       .def("print_current_collision_infos", &PlanningSceneCollisionCheck::printCurrentCollisionInfos)
       .def("update_joints", &PlanningSceneCollisionCheck::updateJoints)
+      .def("add_box", addBox1)
+      .def("add_cylinder", addCylinder1)
+      .def("add_sphere", addSphere)
+      .def("add_mesh_from_file", addMeshFromFile)
       ;
 }
