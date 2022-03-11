@@ -29,10 +29,14 @@ const std::string & name, const std::string & base_link, const std::string & tip
 """
 pc = suhan_robot_model_tools_wrapper_cpp.PlanningSceneCollisionCheck()
 names = suhan_robot_model_tools_wrapper_cpp.NameVector()
+dofs = suhan_robot_model_tools_wrapper_cpp.IntVector()
 names.append('panda_left')
+dofs.append(7)
 names.append('panda_right')
+dofs.append(7)
 names.append('panda_top')
-pc.set_arm_names(names)
+dofs.append(7)
+pc.set_group_names_and_dofs(names,dofs)
 
 tcc = suhan_robot_model_tools_wrapper_cpp.TripleChainConstraintsFunctions()
 tcc.add_trac_ik_adapter('left_arm', 'panda_left_link0','panda_left_hand', 0.1, 1e-6,  '/robot_description')
