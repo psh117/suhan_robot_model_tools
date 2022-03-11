@@ -38,6 +38,11 @@ names.append('panda_top')
 dofs.append(7)
 pc.set_group_names_and_dofs(names,dofs)
 
+dim = np.array([0.1,0.2,0.3])
+pos_box = np.array([0.5,0.0,1.1])
+quat_box = np.array([0,0,0,1])
+pc.add_box(dim, 'test1',pos_box,quat_box)
+
 tcc = TripleChainConstraintsFunctions()
 tcc.add_trac_ik_adapter('left_arm', 'panda_left_link0','panda_left_hand', 0.1, 1e-6,  '/robot_description')
 tcc.add_trac_ik_adapter('right_arm', 'base','panda_right_hand', 0.1, 1e-6,  '/robot_description')
