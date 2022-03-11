@@ -69,11 +69,11 @@ while True:
     while r == False:
         q_rnd = np.random.uniform(low=lb, high=ub)
         q_total[:7] = q_rnd
+        pc.update_joints(q_total)
         r = pc.is_valid(q_total)
         if r == False:
             failcount += 1
             pc.print_current_collision_infos()
-    pc.update_joints(q_total)
     pc.publish_planning_scene_msg()
     raw_input()
 
