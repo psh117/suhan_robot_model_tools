@@ -47,7 +47,7 @@ public:
   void addCylinder(const Eigen::Ref<const Eigen::Vector2d> &dim, const std::string &id,
               const Eigen::Ref<const Eigen::Vector3d> &pos, const Eigen::Ref<const Eigen::Vector4d> &quat);
 
-  void addCyl inder(const Eigen::Ref<const Eigen::Vector2d> &dim, geometry_msgs::Pose pose, const std::string &id);
+  void addCylinder(const Eigen::Ref<const Eigen::Vector2d> &dim, geometry_msgs::Pose pose, const std::string &id);
 
   void addSphere(const double &dim, const std::string &id,
               const Eigen::Ref<const Eigen::Vector3d> &pos, const Eigen::Ref<const Eigen::Vector4d> &quat);

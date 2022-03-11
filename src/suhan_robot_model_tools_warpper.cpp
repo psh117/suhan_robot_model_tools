@@ -22,6 +22,7 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
 
   bp::class_<std::vector<std::string> > ("NameVector")
     .def(boost::python::vector_indexing_suite<std::vector<std::string> >())
+  ;
 
   bp::class_<std::vector<std::string> > ("IntVector")
     .def(boost::python::vector_indexing_suite<std::vector<int> >())
