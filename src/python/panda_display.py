@@ -34,10 +34,10 @@ names.append('panda_arm')
 dofs.append(7)
 pc.set_group_names_and_dofs(names,dofs)
 
-dim = np.array([0.1,0.2,0.3])
-pos_box = np.array([0.5,0.0,1.1])
-quat_box = np.array([0,0,0,1])
-pc.add_box(dim, 'test1',pos_box,quat_box)
+# dim = np.array([0.1,0.2,0.3])
+# pos_box = np.array([0.5,0.0,1.1])
+# quat_box = np.array([0,0,0,1])
+# pc.add_box(dim, 'test1',pos_box,quat_box)
 
 ik_adaptor = TRACIKAdapter('panda_link0', 'panda_hand', 0.1, 1e-6,  '/robot_description')
 q = np.array([0, 0, 0, -pi/2, 0, pi/2, pi/4])
@@ -57,13 +57,14 @@ quat = d.second
 fk_set = []
 failcount = 0
 
-while True:
+while rospy.is_shutdown() is False:
     # r = False
     # while r == False:
-    #     pc.update_joints(q)
+    pc.update_joints(q)
     #     r = pc.is_valid(q)
     #     if r == False:
     #         failcount += 1
     #         pc.print_current_collision_infos()
     pc.publish_planning_scene_msg()
-    raw_input()
+    c = raw_input()
+    if c == 'q': break
