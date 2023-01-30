@@ -1,4 +1,5 @@
 #include "suhan_robot_model_tools.h"
+#include <unsupported/Eigen/MatrixFunctions>
 
 const std::string cgreen{"\033[0;32m"};
 const std::string creset{"\033[0m"};
@@ -33,8 +34,8 @@ void KinematicsConstraintsFunctions::jacobian(const Eigen::Ref<const Eigen::Vect
 {
     Eigen::VectorXd y1 = x;
     Eigen::VectorXd y2 = x;
-    Eigen::VectorXd t1(1);
-    Eigen::VectorXd t2(1);
+    Eigen::VectorXd t1(m_);
+    Eigen::VectorXd t2(m_);
 
     // Use a 7-point central difference stencil on each column.
     for (std::size_t j = 0; j < n_; j++)
@@ -100,8 +101,8 @@ bool KinematicsConstraintsFunctions::project(Eigen::Ref<Eigen::VectorXd> x)
     // Newton's method
     unsigned int iter = 0;
     double norm = 0;
-    Eigen::VectorXd f(1);
-    Eigen::MatrixXd j(1, n_);
+    Eigen::VectorXd f(m_);
+    Eigen::MatrixXd j(m_, n_);
 
     const double squaredTolerance = tolerance_ * tolerance_;
 
@@ -163,6 +164,110 @@ void DualChainConstraintsFunctions::setRotErrorRatio(double ratio)
 }
 
 
+Eigen::MatrixXd DualChainConstraintsFunctions::getJacobian6d(const Eigen::Ref<const Eigen::VectorXd> &x)
+{
+  auto model1 = robot_models_[names_[0]];
+  auto model2 = robot_models_[names_[1]];
+  const Eigen::Ref<const Eigen::VectorXd> q1 = x.head(q_lengths_[0]);
+  const Eigen::Ref<const Eigen::VectorXd> q2 = x.tail(q_lengths_[1]); 
+  
+  
+  std::cout << "[debug] DualChainConstraintsFunctions::getJacobian6d\n";
+  auto t1 = model1->forwardKinematics(q1);
+  auto t2 = model2->forwardKinematics(q2);
+  
+  auto j1 = model1->getJacobianMatrix(q1);
+  auto j2 = model1->getJacobianMatrix(q2);
+
+  std::cout << "J1: \n";
+  std::cout << j1 << std::endl;
+  std::cout << "J2: \n";
+  std::cout << j2 << std::endl;
+
+}
+
+////
+DualChainConstraintsFunctions6D::DualChainConstraintsFunctions6D()
+{
+  m_ = 6;
+}
+
+void DualChainConstraintsFunctions6D::setNames(const std::string & name1, const std::string & name2)
+{
+  names_[0] = name1;
+  names_[1] = name2;
+
+  n_ = 0;
+  for (int i=0; i<2; ++i)
+  {
+    q_lengths_[i] = robot_models_[names_[i]]->getNumJoints();
+    n_ += q_lengths_[i];
+  }
+  std::cout << names_[0] << " and " << names_[1] << std::endl
+  << "q len: " << q_lengths_[0] << " and " << q_lengths_[1] << std::endl;
+
+}
+
+void DualChainConstraintsFunctions6D::setChain(const Eigen::Ref<const Eigen::Vector3d> &pos, const Eigen::Ref<const Eigen::Vector4d> &quat){
+  chain_transform_ = vectorsToIsometry(pos,quat);
+}
+
+void DualChainConstraintsFunctions6D::function(const Eigen::Ref<const Eigen::VectorXd> &x,
+                                  Eigen::Ref<Eigen::VectorXd> out)
+{
+  auto model1 = robot_models_[names_[0]];
+  auto model2 = robot_models_[names_[1]];
+  const Eigen::Ref<const Eigen::VectorXd> q1 = x.head(q_lengths_[0]);
+  const Eigen::Ref<const Eigen::VectorXd> q2 = x.tail(q_lengths_[1]); 
+  auto t1 = model1->forwardKinematics(q1);
+  auto t2 = model2->forwardKinematics(q2);
+  
+  Eigen::Isometry3d chain_error = chain_transform_.inverse() * t1.inverse() * t2;
+  
+  Eigen::Matrix3d llg = chain_error.linear().log();
+  out[0] = chain_error.translation()(0) * chain_error.translation()(0);
+  out[1] = chain_error.translation()(1) * chain_error.translation()(1);
+  out[2] = chain_error.translation()(2) * chain_error.translation()(2);
+  out[3] = llg(2,1) * llg(2,1);
+  out[4] = llg(0,2) * llg(0,2);
+  out[5] = llg(1,0) * llg(1,0);
+
+  // Eigen::Quaterniond current_quat(current_chain.linear());
+  // Eigen::Quaterniond init_quat(chain_transform_.linear());
+
+  // double err_r = current_quat.angularDistance(init_quat);
+  // double err_p = (current_chain.translation() - chain_transform_.translation()).norm();
+  
+  // out[0] = err_p + err_r * rot_error_ratio_;
+}
+
+void DualChainConstraintsFunctions6D::setRotErrorRatio(double ratio)
+{
+  rot_error_ratio_ = ratio;
+}
+
+
+Eigen::MatrixXd DualChainConstraintsFunctions6D::getJacobian6d(const Eigen::Ref<const Eigen::VectorXd> &x)
+{
+  auto model1 = robot_models_[names_[0]];
+  auto model2 = robot_models_[names_[1]];
+  const Eigen::Ref<const Eigen::VectorXd> q1 = x.head(q_lengths_[0]);
+  const Eigen::Ref<const Eigen::VectorXd> q2 = x.tail(q_lengths_[1]); 
+  
+  
+  std::cout << "[debug] DualChainConstraintsFunctions6D::getJacobian6d\n";
+  auto t1 = model1->forwardKinematics(q1);
+  auto t2 = model2->forwardKinematics(q2);
+  
+  auto j1 = model1->getJacobianMatrix(q1);
+  auto j2 = model1->getJacobianMatrix(q2);
+
+  std::cout << "J1: \n";
+  std::cout << j1 << std::endl;
+  std::cout << "J2: \n";
+  std::cout << j2 << std::endl;
+
+}
 
 ////
 

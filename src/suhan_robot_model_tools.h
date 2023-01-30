@@ -25,6 +25,7 @@ protected:
   std::map<std::string, TRACIKAdapterPtr> robot_models_;
   Eigen::VectorXd q_;
   unsigned int n_; ///< dim of q_
+  unsigned int m_ {1}; ///< dim of constraint
   int num_finite_diff_ {7};
   double tolerance_{1e-3};
   int maxIterations_{1000};
@@ -40,7 +41,26 @@ public:
   void setChain(const Eigen::Ref<const Eigen::Vector3d> &pos, const Eigen::Ref<const Eigen::Vector4d> &quat);
   void setNames(const std::string & name1, const std::string & name2);
   void setRotErrorRatio(double ratio);
-  
+  Eigen::MatrixXd getJacobian6d(const Eigen::Ref<const Eigen::VectorXd> &x);
+private:
+  Eigen::Isometry3d chain_transform_;
+  std::array<std::string, 2> names_;
+  std::array<int,2> q_lengths_;
+  double rot_error_ratio_ {1.0};
+
+};
+
+class DualChainConstraintsFunctions6D : public KinematicsConstraintsFunctions
+{
+public:
+  DualChainConstraintsFunctions6D();
+  void function(const Eigen::Ref<const Eigen::VectorXd> &x,
+                                    Eigen::Ref<Eigen::VectorXd> out) override;
+
+  void setChain(const Eigen::Ref<const Eigen::Vector3d> &pos, const Eigen::Ref<const Eigen::Vector4d> &quat);
+  void setNames(const std::string & name1, const std::string & name2);
+  void setRotErrorRatio(double ratio);
+  Eigen::MatrixXd getJacobian6d(const Eigen::Ref<const Eigen::VectorXd> &x);
 private:
   Eigen::Isometry3d chain_transform_;
   std::array<std::string, 2> names_;

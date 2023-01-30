@@ -27,7 +27,7 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
   bp::class_<std::vector<int> > ("IntVector")
     .def(boost::python::vector_indexing_suite<std::vector<int> >())
   ;
-  bp::class_<Eigen::Isometry3d>("Isometry3d");
+  bp::class_<Eigen::Isometry3d>("Isometry3d"); 
 
   bool (TRACIKAdapter::*solve1)
     (const Eigen::Ref<const Eigen::VectorXd> &q0, const Eigen::Isometry3d & transform, Eigen::Ref<Eigen::VectorXd> solution) 
@@ -40,6 +40,7 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
       .def("is_valid", &TRACIKAdapter::isValid)
       .def("solve", solve1)
       .def("forward_kinematics", &TRACIKAdapter::forwardKinematics)
+      .def("get_jacobian_matrix", &TRACIKAdapter::getJacobianMatrix)
       .def("set_bounds", &TRACIKAdapter::setBounds)
       .def("set_tolerance_bounds", &TRACIKAdapter::setToleranceBounds)
       ;
@@ -56,6 +57,19 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
       .def("set_max_iterations", &DualChainConstraintsFunctions::setMaxIterations)
       .def("set_num_finite_diff", &DualChainConstraintsFunctions::setNumFiniteDiff)
       .def("set_rot_error_ratio", &DualChainConstraintsFunctions::setRotErrorRatio)
+      ;
+  bp::class_<DualChainConstraintsFunctions6D, boost::noncopyable>("DualChainConstraintsFunctions6D")
+      .def("add_trac_ik_adapter", &DualChainConstraintsFunctions6D::addTRACIKAdapter, bp::return_internal_reference<>())
+      .def("get_trac_ik_adapter", &DualChainConstraintsFunctions6D::getTRACIKAdapter, bp::return_internal_reference<>())
+      .def("project", &DualChainConstraintsFunctions6D::project)
+      .def("jacobian", &DualChainConstraintsFunctions6D::jacobian)
+      .def("function", &DualChainConstraintsFunctions6D::function)
+      .def("set_chain", &DualChainConstraintsFunctions6D::setChain)
+      .def("set_names", &DualChainConstraintsFunctions6D::setNames)
+      .def("set_tolerance", &DualChainConstraintsFunctions6D::setTolerance)
+      .def("set_max_iterations", &DualChainConstraintsFunctions6D::setMaxIterations)
+      .def("set_num_finite_diff", &DualChainConstraintsFunctions6D::setNumFiniteDiff)
+      .def("set_rot_error_ratio", &DualChainConstraintsFunctions6D::setRotErrorRatio)
       ;
       
   bp::class_<TripleChainConstraintsFunctions, boost::noncopyable>("TripleChainConstraintsFunctions")
