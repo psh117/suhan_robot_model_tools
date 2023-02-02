@@ -61,7 +61,7 @@ TRACIKAdapter::TRACIKAdapter(const std::string& base_link,
                              const std::string& tip_link, 
                              double max_time, double precision,
                              const std::string& URDF_param)
- : trac_ik_solver_(base_link, tip_link, URDF_param, max_time, precision) 
+ : trac_ik_solver_(base_link, tip_link, URDF_param, max_time, precision)
                                   // 0.2, 1e-4 TRAC_IK::Speed
 { 
   std::scoped_lock _lock(iK_solver_mutex_);
@@ -70,6 +70,7 @@ TRACIKAdapter::TRACIKAdapter(const std::string& base_link,
   if (!valid){ROS_ERROR("There was no valid KDL chain found");return;}
 
   fk_solver_.reset(new KDL::ChainFkSolverPos_recursive(chain_));
+  jac_solver_.reset(new KDL::ChainJntToJacSolver(chain_));
 
   KDL::JntArray ll, ul; //lower joint limits, upper joint limits
   valid = trac_ik_solver_.getKDLLimits(ll, ul);
@@ -237,4 +238,16 @@ Eigen::Isometry3d TRACIKAdapter::forwardKinematics(const Eigen::Ref<const Eigen:
   fk_solver_->JntToCart(jarr_q, frame);
 
   return getEigenFrame(frame);
+}
+
+Eigen::Matrix<double,6,Eigen::Dynamic> TRACIKAdapter::getJacobianMatrix(const Eigen::Ref<const Eigen::VectorXd> &q)
+{
+  std::scoped_lock _lock(iK_solver_mutex_);
+  KDL::JntArray jarr_q;
+  KDL::Jacobian jacobian;
+  
+  jarr_q.data = q;
+  jac_solver_->JntToJac(jarr_q, jacobian);
+  
+  return jacobian.data;
 }

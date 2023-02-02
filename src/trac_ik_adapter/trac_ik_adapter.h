@@ -21,6 +21,7 @@ public:
   bool solve(const Eigen::Ref<const Eigen::VectorXd> &q0, const Eigen::Isometry3d & transform, Eigen::Ref<Eigen::VectorXd> solution);
   bool solve(const Eigen::Isometry3d & transform, Eigen::Ref<Eigen::VectorXd> solution);
   Eigen::Isometry3d forwardKinematics(const Eigen::Ref<const Eigen::VectorXd> &q);
+  Eigen::Matrix<double,6,Eigen::Dynamic> getJacobianMatrix(const Eigen::Ref<const Eigen::VectorXd> &q);
 
   Eigen::VectorXd getRandomConfig();
   Eigen::VectorXd getGaussianRandomConfig(const Eigen::Ref<const Eigen::VectorXd> &q0, double sigma = 0.1);
@@ -50,6 +51,7 @@ protected:
 
   TRAC_IK::TRAC_IK trac_ik_solver_;
   std::unique_ptr<KDL::ChainFkSolverPos_recursive> fk_solver_;
+  std::unique_ptr<KDL::ChainJntToJacSolver> jac_solver_;
   KDL::Chain chain_;
   KDL::Twist bounds_;
 };
