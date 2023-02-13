@@ -1,5 +1,7 @@
 # Suhan Robot Model Tools
+Code for motion planning and planning scene
 ## Data Structure
+Structure what you need to complete after installation
 ```sh
 ├── assembly_env_description 
 ├── assembly_moveit_config
@@ -43,7 +45,7 @@ Install dependencies
 sudo apt install ros-melodic-trac-ik ros-melodic-moveit
 ```
 
-Example code
+Install step and running code example
 ```sh
 
 sudo apt install ros-melodic-combined-robot-hw
@@ -65,7 +67,7 @@ roslaunch assembly_moveit_config demo.launch
 
 # quit the launch after the Rviz load
 
-#rosparam set /robot_description "$(xacro assembly_env.urdf.xacro)" 
+# rosparam set /robot_description "$(xacro assembly_env.urdf.xacro)" 
 
 roscd suhan_robot_model_tools/src/python/
 
