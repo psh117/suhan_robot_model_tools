@@ -81,12 +81,16 @@ python panda_datagen.py
 2. assembly_moveit_config
 3. franka_ros
 4. src/collision_checker
-   Use for calculating planning scene collision 
+   Use for calculating planning scene collision
+   
 5. src/eigen_tools
    c++ library for linear algebra and vector calculus
+   
 6. src/python
    main function for planning scene
+   
 7. src/trac_ik_adapter
    IK solver Library
+   
 8. src/suhan_robot_model_tools
 ```
