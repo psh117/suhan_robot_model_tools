@@ -71,3 +71,16 @@ roscd suhan_robot_model_tools/src/python/
 
 python panda_datagen.py
 ```
+
+## Code Instruction
+
+```sh
+1. assembly_env_description 
+2. assembly_moveit_config
+3. franka_ros
+4. src/collision_checker
+5. src/eigen_tools
+6. src/python
+7. src/trac_ik_adapter
+8. src/suhan_robot_model_tools
+```
