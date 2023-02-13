@@ -43,7 +43,7 @@ Install dependencies
 sudo apt install ros-melodic-trac-ik ros-melodic-moveit
 ```
 
-For an example,
+Example code
 ```sh
 
 sudo apt install ros-melodic-combined-robot-hw
