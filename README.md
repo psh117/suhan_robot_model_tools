@@ -37,12 +37,10 @@
 ├── setup.py
 └── README.md
 ```
-
+## Install dependencies
 ```sh
-# install dependencies
 sudo apt install ros-melodic-trac-ik ros-melodic-moveit
 ```
-
 
 For an example,
 ```sh
