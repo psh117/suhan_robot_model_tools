@@ -77,20 +77,17 @@ python panda_datagen.py
 ## Code Instruction
 
 ```sh
-1. assembly_env_description 
-2. assembly_moveit_config
-3. franka_ros
-4. src/collision_checker
+1. collision_checker
    Use for calculating planning scene collision
    
-5. src/eigen_tools
+2. eigen_tools
    c++ library for linear algebra and vector calculus
    
-6. src/python
+3. python
    main function for planning scene
    
-7. src/trac_ik_adapter
+4. trac_ik_adapter
    IK solver Library
    
-8. src/suhan_robot_model_tools
+5. suhan_robot_model_tools
 ```
