@@ -1,4 +1,5 @@
 # Suhan Robot Model Tools
+## Data Structure
 ```sh
 ├── assembly_env_description 
 ├── assembly_moveit_config
