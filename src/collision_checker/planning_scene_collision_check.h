@@ -24,7 +24,7 @@ if(debug_file_.is_open()) \
 class PlanningSceneCollisionCheck
 {
 public:
-  PlanningSceneCollisionCheck();
+  PlanningSceneCollisionCheck(const std::string & topic_name = "");
   void setGroupNamesAndDofs(const std::vector<std::string> &arm_name, const std::vector<int> & dofs);
   bool isValid(const Eigen::Ref<const Eigen::VectorXd> &q) const;
   double clearance(const Eigen::Ref<const Eigen::VectorXd> &q) const;
@@ -53,8 +53,6 @@ public:
               const Eigen::Ref<const Eigen::Vector3d> &pos, const Eigen::Ref<const Eigen::Vector4d> &quat);
 
   void addSphere(const double &dim, geometry_msgs::Pose pose, const std::string &id);
-
-  void addAndAttachObject(const std::string &object_id, const std::string &header_frame, const std::vector<std::string> &touch_links);
   
   void attachObject(const std::string &object_id, const std::string &link_name, const std::vector<std::string> &touch_links);
   void detachObject(const std::string &object_id, const std::string &link_name);

@@ -49,10 +49,13 @@ include_directories(
 )
 
 add_library(suhan_robot_model_tools
-  src/suhan_robot_model_tools.cpp
   src/trac_ik_adapter/trac_ik_adapter.cpp
   src/eigen_tools/eigen_tools.cpp
   src/collision_checker/planning_scene_collision_check.cpp
+  src/constraints/kinematics_constraint_functions.cpp
+  src/constraints/dual_chain_constraint_functions.cpp
+  src/constraints/triple_chain_constraint_functions.cpp
+  src/constraints/orientation_constraint_functions.cpp
 )
 
 add_library(suhan_robot_model_tools_wrapper_cpp src/suhan_robot_model_tools_warpper.cpp)

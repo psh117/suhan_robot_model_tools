@@ -3,9 +3,13 @@
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #include <boost/python/suite/indexing/map_indexing_suite.hpp>
 #include <eigenpy/eigenpy.hpp>
-#include "suhan_robot_model_tools.h"
 #include "eigen_tools/eigen_tools.h"
 #include "collision_checker/planning_scene_collision_check.h"
+
+#include "constraints/kinematics_constraint_functions.h"
+#include "constraints/orientation_constraint_functions.h"
+#include "constraints/triple_chain_constraint_functions.h"
+#include "constraints/dual_chain_constraint_functions.h"
 
 BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
 {
@@ -100,9 +104,11 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
   void (PlanningSceneCollisionCheck::*addMeshFromFile)(const std::string & file_name, const std::string &id, 
                        const Eigen::Ref<const Eigen::Vector3d> &pos, const Eigen::Ref<const Eigen::Vector4d> &quat) = &PlanningSceneCollisionCheck::addMeshFromFile;
 
-  bp::class_<PlanningSceneCollisionCheck, boost::noncopyable>("PlanningSceneCollisionCheck")
+  bp::class_<PlanningSceneCollisionCheck, boost::noncopyable>("PlanningSceneCollisionCheck", bp::init<const std::string&>())
       .def("set_group_names_and_dofs", &PlanningSceneCollisionCheck::setGroupNamesAndDofs)
       .def("is_valid", &PlanningSceneCollisionCheck::isValid)
+      .def("attach_object", &PlanningSceneCollisionCheck::attachObject)
+      .def("detach_object", &PlanningSceneCollisionCheck::detachObject)
       .def("publish_planning_scene_msg", &PlanningSceneCollisionCheck::publishPlanningSceneMsg)
       .def("print_current_collision_infos", &PlanningSceneCollisionCheck::printCurrentCollisionInfos)
       .def("update_joints", &PlanningSceneCollisionCheck::updateJoints)

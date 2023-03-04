@@ -1,11 +1,14 @@
 #include "collision_checker/planning_scene_collision_check.h"
 
-PlanningSceneCollisionCheck::PlanningSceneCollisionCheck()
+// TODO: make it load urdf and srdf 
+// robot_model_loader::RobotModelLoader robot_model_loader("urdf", "srdf");
+
+PlanningSceneCollisionCheck::PlanningSceneCollisionCheck(const std::string & topic_name)
 {
   robot_model_loader::RobotModelLoader robot_model_loader("robot_description");
   robot_model_ = robot_model_loader.getModel();
   planning_scene_ = std::make_shared<planning_scene::PlanningScene> (robot_model_);
-  scene_pub_ = nh_.advertise<moveit_msgs::PlanningScene>("/planning_scenes_suhan", 1);
+  scene_pub_ = nh_.advertise<moveit_msgs::PlanningScene>(topic_name, 1);
   // acm_ = std::make_shared<collision_detection::AllowedCollisionMatrix>(planning_scene_->getAllowedCollisionMatrix());
 };
 
