@@ -5,7 +5,6 @@ import time
 from scipy.spatial.transform import Rotation as R
 import os
 
-oc = OrientationConstraint('panda_arm', 'panda_link0', 'panda_hand', axis=0, planning_scene_name='/panda_test_scene')
 from math import pi
 
 
@@ -40,7 +39,7 @@ R_offset[2,0] = 1.0
 R_offset[1,1] = -1.0
 R_offset[0,2] = 1.0
 
-oc.constraint.set_orientation_offset(R_offset)
+oc = OrientationConstraint('panda_arm', 'panda_link0', 'panda_hand', axis=0, orientation_offset=R_offset, planning_scene_name='/panda_test_scene')
 
 dt = 0.5
 last_time = time.time()
@@ -74,10 +73,12 @@ try:
             
             if (positive_counts % save_every) == 0:
                 print('positive/negative -- {}/{}'.format(positive_counts,negative_counts))
-                np.save(f'datasets/{name}_{seed}_positive_{positive_counts}.npy', np.array(positive_sets))
-                if positive_counts > save_every*save_top_k:
-                    os.remove(f'datasets/{name}_{seed}_positive_{positive_counts-save_every*save_top_k}.npy')
-
+                try:
+                    np.save(f'datasets/{name}_{seed}_positive_{positive_counts}.npy', np.array(positive_sets))
+                    if positive_counts > save_every*save_top_k:
+                        os.remove(f'datasets/{name}_{seed}_positive_{positive_counts-save_every*save_top_k}.npy')
+                except:
+                    print('save failed')
             
         elif local_r[0,0] < -0.9:
             negative_sets.append(random_q)
@@ -85,10 +86,12 @@ try:
 
             if (negative_counts % save_every) == 0:
                 print('positive/negative -- {}/{}'.format(positive_counts,negative_counts))
-                np.save(f'datasets/{name}_{seed}_negative_{negative_counts}.npy', np.array(negative_sets))
-                if negative_counts > save_every*save_top_k:
-                    os.remove(f'datasets/{name}_{seed}_negative_{negative_counts-save_every*save_top_k}.npy')
-            
+                try:
+                    np.save(f'datasets/{name}_{seed}_negative_{negative_counts}.npy', np.array(negative_sets))
+                    if negative_counts > save_every*save_top_k:
+                        os.remove(f'datasets/{name}_{seed}_negative_{negative_counts-save_every*save_top_k}.npy')
+                except:
+                    print('save failed')
         else:
             print('what???')
             continue
