@@ -75,7 +75,21 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
       .def("set_num_finite_diff", &DualChainConstraintsFunctions6D::setNumFiniteDiff)
       .def("set_rot_error_ratio", &DualChainConstraintsFunctions6D::setRotErrorRatio)
       ;
-      
+  
+  bp::class_<OrientationConstraintFunctions, boost::noncopyable>("OrientationConstraintFunctions")
+      .def("add_trac_ik_adapter", &OrientationConstraintFunctions::addTRACIKAdapter, bp::return_internal_reference<>())
+      .def("get_trac_ik_adapter", &OrientationConstraintFunctions::getTRACIKAdapter, bp::return_internal_reference<>())
+      .def("project", &OrientationConstraintFunctions::project)
+      .def("jacobian", &OrientationConstraintFunctions::jacobian)
+      .def("function", &OrientationConstraintFunctions::function)
+      .def("set_name", &OrientationConstraintFunctions::setName)
+      .def("set_orientation_vector", &OrientationConstraintFunctions::setOrientationVector)
+      .def("set_orientation_offset", &OrientationConstraintFunctions::setOrientationOffset)
+      .def("set_tolerance", &OrientationConstraintFunctions::setTolerance)
+      .def("set_max_iterations", &OrientationConstraintFunctions::setMaxIterations)
+      .def("set_num_finite_diff", &OrientationConstraintFunctions::setNumFiniteDiff)
+      ;
+
   bp::class_<TripleChainConstraintsFunctions, boost::noncopyable>("TripleChainConstraintsFunctions")
       .def("add_trac_ik_adapter", &TripleChainConstraintsFunctions::addTRACIKAdapter, bp::return_internal_reference<>())
       .def("get_trac_ik_adapter", &TripleChainConstraintsFunctions::getTRACIKAdapter, bp::return_internal_reference<>())
