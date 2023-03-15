@@ -1,4 +1,5 @@
 #include "constraints/dual_chain_constraint_functions.h"
+#include "dual_chain_constraint_functions.h"
 
 void DualChainConstraintsFunctions::setNames(const std::string & name1, const std::string & name2)
 {
@@ -117,4 +118,44 @@ void DualChainConstraintsFunctions6D::function(const Eigen::Ref<const Eigen::Vec
 void DualChainConstraintsFunctions6D::setRotErrorRatio(double ratio)
 {
   rot_error_ratio_ = ratio;
+}
+
+DualChainConstraintIK::DualChainConstraintIK()
+{
+  target_pose_.setIdentity();
+  m_ = 12;
+}
+
+void DualChainConstraintIK::function(const Eigen::Ref<const Eigen::VectorXd> &x, Eigen::Ref<Eigen::VectorXd> out)
+{
+  auto model1 = robot_models_[names_[0]];
+  auto model2 = robot_models_[names_[1]];
+  const Eigen::Ref<const Eigen::VectorXd> q1 = x.head(q_lengths_[0]);
+  const Eigen::Ref<const Eigen::VectorXd> q2 = x.tail(q_lengths_[1]); 
+  auto t1 = model1->forwardKinematics(q1);
+  auto t2 = model2->forwardKinematics(q2);
+  
+  Eigen::Isometry3d chain_error = chain_transform_.inverse() * t1.inverse() * t2;
+  Eigen::Matrix3d llg = chain_error.linear().log();
+  // Eigen::Vector3d euler_angles = chain_error.linear().eulerAngles(2,1,0);
+  out[0] = chain_error.translation()(0);
+  out[1] = chain_error.translation()(1);
+  out[2] = chain_error.translation()(2);
+  out[3] = llg(2,1);
+  out[4] = llg(0,2);
+  out[5] = llg(1,0);
+
+  Eigen::Isometry3d pose_error = target_pose_.inverse() * t1;
+  Eigen::Matrix3d llg2 = pose_error.linear().log();
+  out[6] = pose_error.translation()(0);
+  out[7] = pose_error.translation()(1);
+  out[8] = pose_error.translation()(2);
+  out[9] = llg2(2,1);
+  out[10] = llg2(0,2);
+  out[11] = llg2(1,0);
+}
+
+void DualChainConstraintIK::setTargetPose(const Eigen::Ref<const Eigen::Vector3d> &pos, const Eigen::Ref<const Eigen::Vector4d> &quat)
+{
+  target_pose_ = vectorsToIsometry(pos,quat);
 }

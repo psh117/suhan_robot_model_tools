@@ -12,10 +12,22 @@ public:
   void setOrientationOffset(const Eigen::Ref<const Eigen::Matrix3d> &orientation_offset);
   void setName(const std::string & name);
 
-private:
+protected:
   Eigen::Vector3d orientaition_vector_;
   Eigen::Matrix3d orientation_offset_;
   std::string name_;
   int q_length_;
   int axis_;
+};
+
+class OrientationConstrainedIK : public OrientationConstraintFunctions
+{
+public:
+  OrientationConstrainedIK();
+  void function(const Eigen::Ref<const Eigen::VectorXd> &x,
+                                    Eigen::Ref<Eigen::VectorXd> out) override;
+  void setTargetPosition(const Eigen::Ref<const Eigen::Vector3d> &target_position);
+
+protected:
+  Eigen::Vector3d target_position_;
 };

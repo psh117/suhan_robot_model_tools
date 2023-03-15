@@ -69,3 +69,43 @@ void OrientationConstraintFunctions::setName(const std::string & name)
 
   std::cout << name_ << " and " << "q len: " << n_ << std::endl;
 }
+
+OrientationConstrainedIK::OrientationConstrainedIK()
+{
+  // TODO Auto-generated constructor stub
+  orientation_offset_.setIdentity();
+  m_ = 5;
+}
+
+void OrientationConstrainedIK::function(const Eigen::Ref<const Eigen::VectorXd> &x,
+                                        Eigen::Ref<Eigen::VectorXd> out)
+{
+  auto model = robot_models_[name_];
+  auto t1 = model->forwardKinematics(x);
+  Eigen::Matrix3d R = orientation_offset_.transpose() * t1.linear();
+  switch (axis_)
+  {
+  case 0:
+    out[0] = asin(R(1, 0));
+    out[1] = asin(R(2, 0));
+    break;
+  case 1:
+    out[0] = asin(R(0, 1));
+    out[1] = asin(R(2, 1));
+    break;
+  case 2:
+    out[0] = asin(R(0, 2));
+    out[1] = asin(R(1, 2));
+    break;
+  default:
+    break;
+  }
+  out[2] = target_position_[0] - t1.translation()[0];
+  out[3] = target_position_[1] - t1.translation()[1];
+  out[4] = target_position_[2] - t1.translation()[2];
+}
+
+void OrientationConstrainedIK::setTargetPosition(const Eigen::Ref<const Eigen::Vector3d> &target_position)
+{
+  target_position_ = target_position;
+}

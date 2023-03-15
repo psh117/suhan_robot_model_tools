@@ -165,7 +165,7 @@ void PlanningSceneCollisionCheck::addMeshFromFile(const std::string & file_name,
   shape_msgs::Mesh shape_msgs_mesh = boost::get<shape_msgs::Mesh>(shape_msg);
 
   moveit_msgs::CollisionObject co;
-  co.header.frame_id = "/base";
+  co.header.frame_id = obs_frame_id_;
   co.id = id;
   co.meshes.push_back(shape_msgs_mesh);
   co.mesh_poses.push_back(pose);
@@ -181,7 +181,7 @@ void PlanningSceneCollisionCheck::addMeshFromFile(const std::string & file_name,
 void PlanningSceneCollisionCheck::updateObjectPose(geometry_msgs::Pose pose, const std::string &id)
 {
   moveit_msgs::CollisionObject co;
-  co.header.frame_id = "/base";
+  co.header.frame_id = obs_frame_id_;
   co.id = id;
   co.mesh_poses.push_back(pose);
   co.operation = moveit_msgs::CollisionObject::MOVE;
@@ -225,7 +225,7 @@ void PlanningSceneCollisionCheck::addBox(const Eigen::Ref<const Eigen::Vector3d>
   primitive.dimensions[2] = dim(2);
 
   moveit_msgs::CollisionObject co;
-  co.header.frame_id = "/base";
+  co.header.frame_id = obs_frame_id_;
   co.id = id;
   co.primitives.push_back(primitive);
   co.primitive_poses.push_back(pose);
@@ -257,7 +257,7 @@ void PlanningSceneCollisionCheck::addCylinder(const Eigen::Ref<const Eigen::Vect
   primitive.dimensions[shape_msgs::SolidPrimitive::CYLINDER_RADIUS] = dim(1);
 
   moveit_msgs::CollisionObject co;
-  co.header.frame_id = "/base";
+  co.header.frame_id = obs_frame_id_;
   co.id = id;
   co.primitives.push_back(primitive);
   co.primitive_poses.push_back(pose);
@@ -287,7 +287,7 @@ void PlanningSceneCollisionCheck::addSphere(const double &dim, geometry_msgs::Po
   primitive.dimensions[shape_msgs::SolidPrimitive::SPHERE_RADIUS] = dim;
 
   moveit_msgs::CollisionObject co;
-  co.header.frame_id = "/base";
+  co.header.frame_id = obs_frame_id_;
   co.id = id;
   co.primitives.push_back(primitive);
   co.primitive_poses.push_back(pose);
@@ -327,7 +327,7 @@ void PlanningSceneCollisionCheck::detachObject(const std::string &object_id, con
 }
 }
 
-void PlanningSceneCollisionCheck::detachAllObject(const std::string & link_name)
+void PlanningSceneCollisionCheck::detachAllObjects(const std::string & link_name)
 {
   moveit_msgs::AttachedCollisionObject aco;
   aco.object.operation = moveit_msgs::CollisionObject::REMOVE;

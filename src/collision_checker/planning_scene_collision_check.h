@@ -56,7 +56,7 @@ public:
   
   void attachObject(const std::string &object_id, const std::string &link_name, const std::vector<std::string> &touch_links);
   void detachObject(const std::string &object_id, const std::string &link_name);
-  void detachAllObject(const std::string & link_name);
+  void detachAllObjects(const std::string & link_name);
   void deleteObject(const std::string & object_id);
   std::vector<std::string> getAttachedObjects(const std::string & link_name);
   std::vector<std::string> getAllAttachedObjects();
@@ -71,6 +71,7 @@ public:
   void printCurrentCollisionInfos();
   std::stringstream streamCurrentCollisionInfos();
   void setJointGroupPositions(const std::string& name, const Eigen::Ref<const Eigen::VectorXd> &q);
+  void setFrameID(const std::string &frame_id) { obs_frame_id_ = frame_id; }
 
   void openDebugFile() { debug_file_.open( debug_file_prefix_ + "planning_scene_debug.txt"); }
   void setDebugFilePrefix(const std::string &name) { debug_file_prefix_ = name; }
@@ -86,6 +87,7 @@ private:
   ros::Publisher scene_pub_;
   std::string debug_file_prefix_;
   std::ofstream debug_file_;
+  std::string obs_frame_id_;
 
   mutable std::mutex planning_scene_mtx_;
   mutable collision_detection::CollisionResult last_collision_result_;
