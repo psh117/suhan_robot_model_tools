@@ -68,6 +68,8 @@ void OrientationConstraintFunctions::setName(const std::string & name)
   n_ = robot_models_[name_]->getNumJoints();
 
   std::cout << name_ << " and " << "q len: " << n_ << std::endl;
+  lb_ = robot_models_[name_]->getLowerBound();
+  ub_ = robot_models_[name_]->getUpperBound();
 }
 
 OrientationConstrainedIK::OrientationConstrainedIK()

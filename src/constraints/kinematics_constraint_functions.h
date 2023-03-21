@@ -9,6 +9,7 @@
 #include "eigen_tools/eigen_tools.h"
 
 const std::string cgreen{"\033[0;32m"};
+const std::string cred{"\033[0;31m"};
 const std::string creset{"\033[0m"};
 
 class KinematicsConstraintsFunctions
@@ -26,6 +27,7 @@ public:
   void setNumFiniteDiff(int num_finite_diff);
 protected:
   std::map<std::string, TRACIKAdapterPtr> robot_models_;
+  Eigen::VectorXd ub_, lb_;
   Eigen::VectorXd q_;
   unsigned int n_; ///< dim of q_
   unsigned int m_ {1}; ///< dim of constraint

@@ -8,7 +8,7 @@
 
 #include "constraints/kinematics_constraint_functions.h"
 #include "constraints/orientation_constraint_functions.h"
-#include "constraints/triple_chain_constraint_functions.h"
+#include "constraints/multi_chain_constraint_functions.h"
 #include "constraints/dual_chain_constraint_functions.h"
 
 BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
@@ -118,20 +118,50 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
       .def("set_max_iterations", &OrientationConstrainedIK::setMaxIterations)
       .def("set_num_finite_diff", &OrientationConstrainedIK::setNumFiniteDiff)
       ;
-
-  bp::class_<TripleChainConstraintsFunctions, boost::noncopyable>("TripleChainConstraintsFunctions")
-      .def("add_trac_ik_adapter", &TripleChainConstraintsFunctions::addTRACIKAdapter, bp::return_internal_reference<>())
-      .def("get_trac_ik_adapter", &TripleChainConstraintsFunctions::getTRACIKAdapter, bp::return_internal_reference<>())
-      .def("project", &TripleChainConstraintsFunctions::project)
-      .def("jacobian", &TripleChainConstraintsFunctions::jacobian)
-      .def("function", &TripleChainConstraintsFunctions::function)
-      .def("set_chain", &TripleChainConstraintsFunctions::setChain)
-      .def("set_names", &TripleChainConstraintsFunctions::setNames)
-      .def("set_tolerance", &TripleChainConstraintsFunctions::setTolerance)
-      .def("set_max_iterations", &TripleChainConstraintsFunctions::setMaxIterations)
-      .def("set_num_finite_diff", &TripleChainConstraintsFunctions::setNumFiniteDiff)
-      .def("set_rot_error_ratio", &TripleChainConstraintsFunctions::setRotErrorRatio)
+  
+  bp::class_<MultiChainConstraintFunctions, boost::noncopyable>("MultiChainConstraintFunctions")
+      .def("add_trac_ik_adapter", &MultiChainConstraintFunctions::addTRACIKAdapter, bp::return_internal_reference<>())
+      .def("get_trac_ik_adapter", &MultiChainConstraintFunctions::getTRACIKAdapter, bp::return_internal_reference<>())
+      .def("project", &MultiChainConstraintFunctions::project)
+      .def("jacobian", &MultiChainConstraintFunctions::jacobian)
+      .def("function", &MultiChainConstraintFunctions::function)
+      .def("set_chains", &MultiChainConstraintFunctions::setChains)
+      .def("set_chains_from_joints", &MultiChainConstraintFunctions::setChainsFromJoints)
+      .def("set_names", &MultiChainConstraintFunctions::setNames)
+      .def("set_tolerance", &MultiChainConstraintFunctions::setTolerance)
+      .def("set_max_iterations", &MultiChainConstraintFunctions::setMaxIterations)
+      .def("set_num_finite_diff", &MultiChainConstraintFunctions::setNumFiniteDiff)
+      .def("set_rot_error_ratio", &MultiChainConstraintFunctions::setRotErrorRatio)
       ;
+
+  bp::class_<MultiChainConstraintIK, boost::noncopyable>("MultiChainConstraintIK")
+      .def("add_trac_ik_adapter", &MultiChainConstraintIK::addTRACIKAdapter, bp::return_internal_reference<>())
+      .def("get_trac_ik_adapter", &MultiChainConstraintIK::getTRACIKAdapter, bp::return_internal_reference<>())
+      .def("project", &MultiChainConstraintIK::project)
+      .def("jacobian", &MultiChainConstraintIK::jacobian)
+      .def("function", &MultiChainConstraintIK::function)
+      .def("set_chains", &MultiChainConstraintIK::setChains)
+      .def("set_chains_from_joints", &MultiChainConstraintIK::setChainsFromJoints)
+      .def("set_names", &MultiChainConstraintIK::setNames)
+      .def("set_tolerance", &MultiChainConstraintIK::setTolerance)
+      .def("set_max_iterations", &MultiChainConstraintIK::setMaxIterations)
+      .def("set_num_finite_diff", &MultiChainConstraintIK::setNumFiniteDiff)
+      .def("set_rot_error_ratio", &MultiChainConstraintIK::setRotErrorRatio)
+      .def("set_target_pose", &MultiChainConstraintIK::setTargetPose)
+      ;
+//   bp::class_<TripleChainConstraintsFunctions, boost::noncopyable>("TripleChainConstraintsFunctions")
+//       .def("add_trac_ik_adapter", &TripleChainConstraintsFunctions::addTRACIKAdapter, bp::return_internal_reference<>())
+//       .def("get_trac_ik_adapter", &TripleChainConstraintsFunctions::getTRACIKAdapter, bp::return_internal_reference<>())
+//       .def("project", &TripleChainConstraintsFunctions::project)
+//       .def("jacobian", &TripleChainConstraintsFunctions::jacobian)
+//       .def("function", &TripleChainConstraintsFunctions::function)
+//       .def("set_chain", &TripleChainConstraintsFunctions::setChain)
+//       .def("set_names", &TripleChainConstraintsFunctions::setNames)
+//       .def("set_tolerance", &TripleChainConstraintsFunctions::setTolerance)
+//       .def("set_max_iterations", &TripleChainConstraintsFunctions::setMaxIterations)
+//       .def("set_num_finite_diff", &TripleChainConstraintsFunctions::setNumFiniteDiff)
+//       .def("set_rot_error_ratio", &TripleChainConstraintsFunctions::setRotErrorRatio)
+//       ;
 
   bool (ompl::base::Constraint::*project1)(Eigen::Ref<Eigen::VectorXd> x) const = &ompl::base::Constraint::project;
 

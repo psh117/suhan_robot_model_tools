@@ -39,8 +39,6 @@ protected:
 
 };
 
-
-
 class DualChainConstraintIK : public DualChainConstraintsFunctions6D
 {
 public:
@@ -53,3 +51,43 @@ private:
   Eigen::Isometry3d target_pose_;
 
 };
+
+
+class DualChainWithFixedOrientationConstraint : public DualChainConstraintsFunctions6D
+{
+public:
+  DualChainWithFixedOrientationConstraint();
+  void function(const Eigen::Ref<const Eigen::VectorXd> &x,
+                                    Eigen::Ref<Eigen::VectorXd> out) override;
+  void setOrientationVector(const Eigen::Ref<const Eigen::Vector3d> &orientation_vector);
+  void setOrientationOffset(const Eigen::Ref<const Eigen::Matrix3d> &orientation_offset);
+
+protected:
+  Eigen::Isometry3d chain_transform_;
+  std::array<std::string, 2> names_;
+  std::array<int,2> q_lengths_;
+  double rot_error_ratio_ {1.0};
+
+  Eigen::Vector3d orientaition_vector_;
+  Eigen::Matrix3d orientation_offset_;
+  std::string name_;
+  int q_length_;
+  int axis_;
+
+};
+
+
+class DualChainWithFixedOrientationConstraintIK : public DualChainWithFixedOrientationConstraint
+{
+public:
+  DualChainWithFixedOrientationConstraintIK();
+  void function(const Eigen::Ref<const Eigen::VectorXd> &x,
+                                    Eigen::Ref<Eigen::VectorXd> out) override;
+  void setTargetPose(const Eigen::Ref<const Eigen::Vector3d> &pos);
+
+
+protected:
+  Eigen::Vector3d target_pos_;
+  
+};
+

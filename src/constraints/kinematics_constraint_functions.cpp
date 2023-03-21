@@ -108,6 +108,15 @@ bool KinematicsConstraintsFunctions::project(Eigen::Ref<Eigen::VectorXd> x)
         jacobian(x, j);
         x -= j.jacobiSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(f);
         function(x, f);
+        
+        for (int i=0; i<x.size(); i++)
+        {
+          if (x[i] < lb_[i])
+            return false;
+            
+          if (x[i] > ub_[i])
+            return false;
+        }
     }
 
     return norm < squaredTolerance;

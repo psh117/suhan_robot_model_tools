@@ -54,7 +54,7 @@ add_library(suhan_robot_model_tools
   src/collision_checker/planning_scene_collision_check.cpp
   src/constraints/kinematics_constraint_functions.cpp
   src/constraints/dual_chain_constraint_functions.cpp
-  src/constraints/triple_chain_constraint_functions.cpp
+  src/constraints/multi_chain_constraint_functions.cpp
   src/constraints/orientation_constraint_functions.cpp
 )
 

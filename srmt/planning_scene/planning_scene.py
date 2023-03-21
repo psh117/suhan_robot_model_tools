@@ -60,10 +60,13 @@ class PlanningScene():
                     q = np.concatenate((q, self.hand_closed.flatten()))
         return q
 
-    def display(self, q):
+    def update_joints(self, q):
         q = q.astype(np.double)
         q = self.add_gripper_to_q(q)
         self.pc.update_joints(q)
+
+    def display(self, q):
+        self.update_joints(q)
         self.pc.publish_planning_scene_msg()
 
     def is_valid(self, q):
