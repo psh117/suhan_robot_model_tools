@@ -1,13 +1,13 @@
 from suhan_robot_model_tools.suhan_robot_model_tools_wrapper_cpp import NameVector, IntVector, DualChainConstraintsFunctions6D, DualChainConstraintIK, OrientationConstraintFunctions, OrientationConstrainedIK, PlanningSceneCollisionCheck, isometry_to_vectors, vectors_to_isometry, MultiChainConstraintFunctions, MultiChainConstraintIK
 from moveit_ros_planning_interface._moveit_roscpp_initializer import roscpp_init
 import numpy as np
-from srmt.planning_scene.planning_scene import PlanningScene
-from srmt.utils.ros_utils import ros_init
+from srmt.planning_scene import PlanningScene
+from srmt.utils import ros_init
 
 import rospy
 
-class ConstraintBase():
-    def __init__(self, name, dim_constraint) -> None:
+class ConstraintBase(object):
+    def __init__(self, name, dim_constraint):
         ros_init(name)
 
         self.dim_constraint = dim_constraint
@@ -57,8 +57,8 @@ class ConstraintBase():
         return r, q_out 
         #  &q0, const Eigen::Isometry3d & transform, Eigen::Ref<Eigen::VectorXd> solution) 
 
-class ConstraintIKBase():
-    def __init__(self, name, dim_constraint_ik) -> None:
+class ConstraintIKBase(object):
+    def __init__(self, name, dim_constraint_ik):
         # ros_init(name)
 
         self.dim_constraint_ik = dim_constraint_ik
@@ -94,7 +94,7 @@ class ConstraintIKBase():
 
 class DualArmConstraint(ConstraintBase, ConstraintIKBase):
     def __init__(self, name1='panda_arm_1', name2='panda_arm_2', ee1='panda_1_hand', ee2='panda_2_hand', desc='/robot_description', base='base', max_iter=1000, tol=1e-3, planning_scene_name='/planning_scenes_suhan', **kwargs):
-        super().__init__(name='DualArmConstraint', dim_constraint=6)
+        super(DualArmConstraint, self).__init__(name='DualArmConstraint', dim_constraint=6)
         self.dim_constraint_ik=12
 
         self.constraint = DualChainConstraintsFunctions6D()
@@ -144,7 +144,7 @@ class DualArmConstraint(ConstraintBase, ConstraintIKBase):
 class OrientationConstraint(ConstraintBase, ConstraintIKBase):
     def __init__(self, name, base, ee, axis=0, orientation_offset=np.identity(3),desc='/robot_description', planning_scene=None, planning_scene_name='/planning_scenes_suhan', **kwargs):
         # axis = 0: x, 1: y, 2: z
-        super().__init__('OrientationConstraint', dim_constraint=2)
+        super(OrientationConstraint, self).__init__('OrientationConstraint', dim_constraint=2)
         # super().__init__('OrientationConstraint', dim_constraint_ik=5)
         self.dim_constraint = 2
         self.dim_constraint_ik = 5
@@ -183,7 +183,7 @@ class OrientationConstraint(ConstraintBase, ConstraintIKBase):
 
 class MultiChainConstraint(ConstraintBase, ConstraintIKBase):
     def __init__(self, names, base, ees, desc='/robot_description', planning_scene=None, planning_scene_name='/planning_scenes_suhan', **kwargs):
-        super().__init__('MultiChainConstraint', dim_constraint=6*(len(names)-1))
+        super(MultiChainConstraint, self).__init__('MultiChainConstraint', dim_constraint=6*(len(names)-1))
         self.dim_constraint_ik = 6*len(names)
         self.constraint = MultiChainConstraintFunctions()
         self.constraint_ik = MultiChainConstraintIK()
@@ -220,7 +220,7 @@ class MultiChainConstraint(ConstraintBase, ConstraintIKBase):
         # self.lb = self.ik_solvers.get_lower_bound()
         # self.ub = self.ik_solvers.get_upper_bound()
     
-    def set_chains(self, chains : list):
+    def set_chains(self, chains):
         """setter for chains
 
         Args:

@@ -4,12 +4,12 @@ import rospy
 import copy
 import numpy as np
 # import math
-from srmt.utils.ros_utils import ros_init
+from srmt.utils import ros_init
 
 # ros_init = False
 
-class PlanningScene():
-    def __init__(self, names, dofs, base_frame_id='/base', hand_name=None, hand_joints=[2], hand_open = [[0.0325,0.0325]], hand_closed = [[0.0, 0.0]], topic_name = "/planning_scenes_suhan", q_init = None) -> None:
+class PlanningScene(object):
+    def __init__(self, names, dofs, base_frame_id='/base', hand_name=None, hand_joints=[2], hand_open = [[0.0325,0.0325]], hand_closed = [[0.0, 0.0]], topic_name = "/planning_scenes_suhan", q_init = None):
         
         ros_init('PlanningScene')
 
