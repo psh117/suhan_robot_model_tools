@@ -183,8 +183,11 @@ void PlanningSceneCollisionCheck::updateObjectPose(geometry_msgs::Pose pose, con
   moveit_msgs::CollisionObject co;
   co.header.frame_id = obs_frame_id_;
   co.id = id;
-  // co.mesh_poses.push_back(pose);
+#if ROS_VERSION_MINOR <= 14
+  co.mesh_poses.push_back(pose);
+#else // >= 15
   co.pose = pose;
+#endif
   co.operation = moveit_msgs::CollisionObject::MOVE;
   
 {

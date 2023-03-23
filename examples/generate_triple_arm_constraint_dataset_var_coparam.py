@@ -1,12 +1,15 @@
+from __future__ import division, print_function
+
 from srmt.constraints import OrientationConstraint, DualArmConstraint, MultiChainConstraint
 from srmt.planning_scene import PlanningScene
-from ts_vae.utils.cont_reader import ContinuousGraspCandidates
+from srmt.utils import ContinuousGraspCandidates
 
 import numpy as np
 import copy
 import time
 from scipy.spatial.transform import Rotation as R
 import os
+import sys
 
 from math import pi
 import tqdm
@@ -16,7 +19,7 @@ import multiprocessing as mp
 
 name = 'panda_triple_arm_with_condition_ver2'
 # seed = 1107
-seed_range = range(1107, 1107+6)
+seed_range = range(2000, 2000+16)
 display = False
 save_every = 100
 save_dir = '../datasets/{name}'.format(name=name)
@@ -26,7 +29,14 @@ dataset_size = 1000000
 
 def generate(seed):
     np.set_printoptions(precision=3, suppress=True, linewidth=200)
-    os.makedirs(save_dir, exist_ok=True)
+
+    if sys.version_info.major >= 3:
+        os.makedirs(save_dir, exist_ok=True)
+    else:
+        try:
+            os.makedirs(save_dir)
+        except:
+            pass
 
     file_name = name + '_dataset_{}'.format(seed)
     np.random.seed(seed)

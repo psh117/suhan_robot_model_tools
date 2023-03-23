@@ -8,5 +8,5 @@ def ros_init(name):
     global ros_initialized
     if ros_initialized is False:
         rospy.init_node(name, anonymous=True, disable_signals=True)
-        roscpp_init(f'{name}cpp', [])
+        roscpp_init('{name}cpp'.format(name=name), [])
         ros_initialized = True
