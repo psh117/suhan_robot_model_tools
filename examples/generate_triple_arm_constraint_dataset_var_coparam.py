@@ -68,7 +68,11 @@ def generate(seed):
 
     q_2 = copy.deepcopy(q_init)
     tq = tqdm.tqdm(total=dataset_size)
+
     cnt = 0
+    col_cnt = 0
+    q_dataset = []
+    q_dataset_col = []
 
     # while True:
     #     # c = [0.2, 0.41, 0.2]
@@ -145,9 +149,6 @@ def generate(seed):
 
         constraint.set_chains_from_joints(q_2)
 
-        col_cnt = 0
-        q_dataset = []
-
         for _ in range(2000): # 1000 trials
             q = constraint.sample()
             r = constraint.project(q)
@@ -163,6 +164,14 @@ def generate(seed):
                 # print('collision')
                 col_cnt += 1
                 tq.set_description('s: {seed:4d}, c: {col_cnt:5d}'.format(seed=seed, col_cnt=col_cnt))
+                q_dataset_col.append(np.concatenate((c,q)))
+                if col_cnt % save_every == 0:
+                    try:
+                        np.save('{save_dir}/col_{file_name}_{cnt}.npy'.format(save_dir=save_dir, file_name=file_name, cnt=col_cnt), np.array(q_dataset))
+                        if cnt > save_every*save_top_k:
+                            os.remove('{save_dir}/col_{file_name}_{cnt}.npy'.format(save_dir=save_dir, file_name=file_name, cnt=col_cnt-save_every*save_top_k))
+                    except:
+                        print('save failed')
                 continue
 
             cnt += 1
