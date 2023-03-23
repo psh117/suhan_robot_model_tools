@@ -61,6 +61,7 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
       .def("set_max_iterations", &DualChainConstraintsFunctions::setMaxIterations)
       .def("set_num_finite_diff", &DualChainConstraintsFunctions::setNumFiniteDiff)
       .def("set_rot_error_ratio", &DualChainConstraintsFunctions::setRotErrorRatio)
+      .def("set_debug_level", &DualChainConstraintsFunctions::setDebugLevel)
       ;
   bp::class_<DualChainConstraintsFunctions6D, boost::noncopyable>("DualChainConstraintsFunctions6D")
       .def("add_trac_ik_adapter", &DualChainConstraintsFunctions6D::addTRACIKAdapter, bp::return_internal_reference<>())
@@ -74,6 +75,7 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
       .def("set_max_iterations", &DualChainConstraintsFunctions6D::setMaxIterations)
       .def("set_num_finite_diff", &DualChainConstraintsFunctions6D::setNumFiniteDiff)
       .def("set_rot_error_ratio", &DualChainConstraintsFunctions6D::setRotErrorRatio)
+      .def("set_debug_level", &DualChainConstraintsFunctions6D::setDebugLevel)
       ;
   bp::class_<DualChainConstraintIK, boost::noncopyable>("DualChainConstraintIK")
       .def("add_trac_ik_adapter", &DualChainConstraintIK::addTRACIKAdapter, bp::return_internal_reference<>())
@@ -88,6 +90,7 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
       .def("set_num_finite_diff", &DualChainConstraintIK::setNumFiniteDiff)
       .def("set_rot_error_ratio", &DualChainConstraintIK::setRotErrorRatio)
       .def("set_target_pose", &DualChainConstraintIK::setTargetPose)
+      .def("set_debug_level", &DualChainConstraintIK::setDebugLevel)
       ;
   
   bp::class_<OrientationConstraintFunctions, boost::noncopyable>("OrientationConstraintFunctions")
@@ -102,6 +105,7 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
       .def("set_tolerance", &OrientationConstraintFunctions::setTolerance)
       .def("set_max_iterations", &OrientationConstraintFunctions::setMaxIterations)
       .def("set_num_finite_diff", &OrientationConstraintFunctions::setNumFiniteDiff)
+      .def("set_debug_level", &OrientationConstraintFunctions::setDebugLevel)
       ;
       
   bp::class_<OrientationConstrainedIK, boost::noncopyable>("OrientationConstrainedIK")
@@ -117,6 +121,7 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
       .def("set_tolerance", &OrientationConstrainedIK::setTolerance)
       .def("set_max_iterations", &OrientationConstrainedIK::setMaxIterations)
       .def("set_num_finite_diff", &OrientationConstrainedIK::setNumFiniteDiff)
+      .def("set_debug_level", &OrientationConstrainedIK::setDebugLevel)
       ;
   
   bp::class_<MultiChainConstraintFunctions, boost::noncopyable>("MultiChainConstraintFunctions")
@@ -132,6 +137,7 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
       .def("set_max_iterations", &MultiChainConstraintFunctions::setMaxIterations)
       .def("set_num_finite_diff", &MultiChainConstraintFunctions::setNumFiniteDiff)
       .def("set_rot_error_ratio", &MultiChainConstraintFunctions::setRotErrorRatio)
+      .def("set_debug_level", &MultiChainConstraintFunctions::setDebugLevel)
       ;
 
   bp::class_<MultiChainConstraintIK, boost::noncopyable>("MultiChainConstraintIK")
@@ -148,6 +154,7 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
       .def("set_num_finite_diff", &MultiChainConstraintIK::setNumFiniteDiff)
       .def("set_rot_error_ratio", &MultiChainConstraintIK::setRotErrorRatio)
       .def("set_target_pose", &MultiChainConstraintIK::setTargetPose)
+      .def("set_debug_level", &MultiChainConstraintIK::setDebugLevel)
       ;
 //   bp::class_<TripleChainConstraintsFunctions, boost::noncopyable>("TripleChainConstraintsFunctions")
 //       .def("add_trac_ik_adapter", &TripleChainConstraintsFunctions::addTRACIKAdapter, bp::return_internal_reference<>())
@@ -164,18 +171,16 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
 //       ;
 
   bool (ompl::base::Constraint::*project1)(Eigen::Ref<Eigen::VectorXd> x) const = &ompl::base::Constraint::project;
-
   void (PlanningSceneCollisionCheck::*addBox1)(const Eigen::Ref<const Eigen::Vector3d> &dim, const std::string &id,
               const Eigen::Ref<const Eigen::Vector3d> &pos, const Eigen::Ref<const Eigen::Vector4d> &quat) = &PlanningSceneCollisionCheck::addBox;
-
   void (PlanningSceneCollisionCheck::*addCylinder1)(const Eigen::Ref<const Eigen::Vector2d> &dim, const std::string &id,
               const Eigen::Ref<const Eigen::Vector3d> &pos, const Eigen::Ref<const Eigen::Vector4d> &quat) = &PlanningSceneCollisionCheck::addCylinder;
-
   void (PlanningSceneCollisionCheck::*addSphere)(const double &dim, const std::string &id,
               const Eigen::Ref<const Eigen::Vector3d> &pos, const Eigen::Ref<const Eigen::Vector4d> &quat) = &PlanningSceneCollisionCheck::addSphere;
-
   void (PlanningSceneCollisionCheck::*addMeshFromFile)(const std::string & file_name, const std::string &id, 
                        const Eigen::Ref<const Eigen::Vector3d> &pos, const Eigen::Ref<const Eigen::Vector4d> &quat) = &PlanningSceneCollisionCheck::addMeshFromFile;
+  void (PlanningSceneCollisionCheck::*updateObjectPose1)(const std::string &id,
+              const Eigen::Ref<const Eigen::Vector3d> &pos, const Eigen::Ref<const Eigen::Vector4d> &quat) = &PlanningSceneCollisionCheck::updateObjectPose;
 
   bp::class_<PlanningSceneCollisionCheck, boost::noncopyable>("PlanningSceneCollisionCheck", bp::init<const std::string&>())
       .def("set_group_names_and_dofs", &PlanningSceneCollisionCheck::setGroupNamesAndDofs)
@@ -184,6 +189,7 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
       .def("detach_object", &PlanningSceneCollisionCheck::detachObject)
       .def("publish_planning_scene_msg", &PlanningSceneCollisionCheck::publishPlanningSceneMsg)
       .def("print_current_collision_infos", &PlanningSceneCollisionCheck::printCurrentCollisionInfos)
+      .def("update_object_pose", updateObjectPose1)
       .def("update_joints", &PlanningSceneCollisionCheck::updateJoints)
       .def("add_box", addBox1)
       .def("detach_all_objects", &PlanningSceneCollisionCheck::detachAllObjects)

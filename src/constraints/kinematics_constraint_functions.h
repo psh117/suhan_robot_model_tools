@@ -25,6 +25,7 @@ public:
   void setTolerance(double tolerance);
   void setMaxIterations(int maxIterations);
   void setNumFiniteDiff(int num_finite_diff);
+  void setDebugLevel(int debug_level);
 protected:
   std::map<std::string, TRACIKAdapterPtr> robot_models_;
   Eigen::VectorXd ub_, lb_;
@@ -34,5 +35,6 @@ protected:
   int num_finite_diff_ {7};
   double tolerance_{1e-3};
   int maxIterations_{1000};
+  int debug_level_{0};
 
 };

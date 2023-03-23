@@ -121,3 +121,8 @@ bool KinematicsConstraintsFunctions::project(Eigen::Ref<Eigen::VectorXd> x)
 
     return norm < squaredTolerance;
 }
+
+void KinematicsConstraintsFunctions::setDebugLevel(int debug_level)
+{
+  debug_level_ = debug_level;
+}

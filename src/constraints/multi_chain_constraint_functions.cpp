@@ -56,11 +56,14 @@ void MultiChainConstraintFunctions::setChainsFromJoints(const Eigen::Ref<const E
     auto ti = robot_models_[names_[i]]->forwardKinematics(qi);
     chain_transform_[i-1] = t0.inverse() * ti;
   }
-  std::cout << cgreen << "[info] chain is successfully registered"  << creset << std::endl;
-  for (int i=0; i<robot_num-1; ++i)
+  if (debug_level_ > 3)
   {
-    std::cout << "[chain_transform_[" << i << "]]" << std::endl 
-              << chain_transform_[i].matrix() << std::endl;
+    std::cout << cgreen << "[info] chain is successfully registered"  << creset << std::endl;
+    for (int i=0; i<robot_num-1; ++i)
+    {
+      std::cout << "[chain_transform_[" << i << "]]" << std::endl 
+                << chain_transform_[i].matrix() << std::endl;
+    }
   }
 }
 
@@ -83,11 +86,14 @@ void MultiChainConstraintFunctions::setChains(const Eigen::Ref<const Eigen::Vect
     cur_idx += 7;
   }
 
-  std::cout << cgreen << "[info] chain is successfully registered"  << creset << std::endl;
-  for (int i=0; i<robot_num-1; ++i)
+  if (debug_level_ > 3)
   {
-    std::cout << "[chain_transform_[" << i << "]]" << std::endl 
-              << chain_transform_[i].matrix() << std::endl;
+    std::cout << cgreen << "[info] chain is successfully registered"  << creset << std::endl;
+    for (int i=0; i<robot_num-1; ++i)
+    {
+      std::cout << "[chain_transform_[" << i << "]]" << std::endl 
+                << chain_transform_[i].matrix() << std::endl;
+    }
   }
 }
 

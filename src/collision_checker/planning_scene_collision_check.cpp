@@ -183,7 +183,8 @@ void PlanningSceneCollisionCheck::updateObjectPose(geometry_msgs::Pose pose, con
   moveit_msgs::CollisionObject co;
   co.header.frame_id = obs_frame_id_;
   co.id = id;
-  co.mesh_poses.push_back(pose);
+  // co.mesh_poses.push_back(pose);
+  co.pose = pose;
   co.operation = moveit_msgs::CollisionObject::MOVE;
   
 {
@@ -350,10 +351,10 @@ void PlanningSceneCollisionCheck::deleteObject(const std::string & object_id)
 }
 }
 
-std::vector<std::string> PlanningSceneCollisionCheck::getAttachedObjects(const std::string & link_name)
-{
+// std::vector<std::string> PlanningSceneCollisionCheck::getAttachedObjects(const std::string & link_name)
+// {
   
-}
+// }
 
 std::vector<std::string> PlanningSceneCollisionCheck::getAllAttachedObjects()
 {

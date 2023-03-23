@@ -1,4 +1,4 @@
-from suhan_robot_model_tools.suhan_robot_model_tools_wrapper_cpp import NameVector, IntVector, DualChainConstraintsFunctions6D, DualChainConstraintIK, OrientationConstraintFunctions, OrientationConstrainedIK, PlanningSceneCollisionCheck, isometry_to_vectors, MultiChainConstraintFunctions, MultiChainConstraintIK
+from suhan_robot_model_tools.suhan_robot_model_tools_wrapper_cpp import NameVector, IntVector, DualChainConstraintsFunctions6D, DualChainConstraintIK, OrientationConstraintFunctions, OrientationConstrainedIK, PlanningSceneCollisionCheck, isometry_to_vectors, vectors_to_isometry, MultiChainConstraintFunctions, MultiChainConstraintIK
 from moveit_ros_planning_interface._moveit_roscpp_initializer import roscpp_init
 import numpy as np
 from srmt.planning_scene.planning_scene import PlanningScene
@@ -49,6 +49,13 @@ class ConstraintBase():
     def sample(self):
         q = np.random.uniform(low=self.lb, high=self.ub)
         return q
+
+    def solve_arm_ik(self, arm_name, q0, pos, quat):
+        iso = vectors_to_isometry(pos, quat)
+        q_out = np.zeros([len(q0)])
+        r = self.ik_solvers[arm_name].solve(q0, iso, q_out)
+        return r, q_out 
+        #  &q0, const Eigen::Isometry3d & transform, Eigen::Ref<Eigen::VectorXd> solution) 
 
 class ConstraintIKBase():
     def __init__(self, name, dim_constraint_ik) -> None:
