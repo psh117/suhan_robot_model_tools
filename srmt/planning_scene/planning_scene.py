@@ -9,21 +9,21 @@ from srmt.utils import ros_init
 # ros_init = False
 
 class PlanningScene(object):
-    def __init__(self, names, dofs, base_frame_id='/base', hand_name=None, hand_joints=[2], hand_open = [[0.0325,0.0325]], hand_closed = [[0.0, 0.0]], topic_name = "/planning_scenes_suhan", q_init = None):
+    def __init__(self, arm_names, dofs, base_link='/base', hand_names=None, hand_joints=[2], hand_open = [[0.0325,0.0325]], hand_closed = [[0.0, 0.0]], topic_name = "/planning_scenes_suhan", q_init = None):
         
         ros_init('PlanningScene')
 
         self.pc = PlanningSceneCollisionCheck(topic_name)
         
         self.use_hand = False
-        if hand_name is not None:
-            self.hand_name = hand_name
+        if hand_names is not None:
+            self.hand_names = hand_names
             self.use_hand = True
             
         names_vec = NameVector()
         dofs_vec = IntVector()
         # print('planning scene!')
-        for name, dof in zip(names, dofs):
+        for name, dof in zip(arm_names, dofs):
             names_vec.append(name)
             dofs_vec.append(dof)
 
@@ -31,18 +31,18 @@ class PlanningScene(object):
         self.hand_closed = np.array(hand_closed, dtype=np.double)
         self.hand_joints = hand_joints
 
-        if hand_name is not None:
-            for name, dof in zip(hand_name, hand_joints):
+        if hand_names is not None:
+            for name, dof in zip(hand_names, hand_joints):
                 names_vec.append(name)
                 dofs_vec.append(dof)
         
         self.pc.set_group_names_and_dofs(names_vec,dofs_vec)
         if q_init is not None:
             self.display(q_init)
-        self.pc.set_frame_id(base_frame_id)
+        self.pc.set_frame_id(base_link)
         
-        if hand_name is not None:
-            self.gripper_open = [True] * len(hand_name)
+        if hand_names is not None:
+            self.gripper_open = [True] * len(hand_names)
         # dim = np.array([0.05,0.05,0.4])
         # pos = np.array([0.33244155,-0.3,1.4-0.25-0.1])
         # quat = np.array([0,0,0,1])
@@ -53,11 +53,11 @@ class PlanningScene(object):
     def add_gripper_to_q(self, q):
         q = copy.deepcopy(q)
         if self.use_hand:
-            for g in self.gripper_open:
+            for g, open, closed in zip(self.gripper_open, self.hand_open, self.hand_closed):
                 if g:
-                    q = np.concatenate((q, self.hand_open.flatten()))
+                    q = np.concatenate((q, open.flatten()))
                 else:
-                    q = np.concatenate((q, self.hand_closed.flatten()))
+                    q = np.concatenate((q, closed.flatten()))
         return q
 
     def update_joints(self, q):

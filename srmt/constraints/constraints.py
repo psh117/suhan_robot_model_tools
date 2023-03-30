@@ -12,18 +12,30 @@ class ConstraintBase(object):
 
         self.dim_constraint = dim_constraint
         self.constraint = None
+        self.epsilon = 1e-3
 
     def function(self, q):
         if q.dtype != np.double:
-            import pdb; pdb.set_trace()
+            raise Exception("q is not double")
         x = np.zeros([self.dim_constraint])
         # q = q.astype(np.double)
         self.constraint.function(q,x)
         return x
+    
+    def is_satisfied(self, q):
+        if q.dtype != np.double:
+            raise Exception("q is not double")
+        # q = q.astype(np.double)
+        x = self.function(q)
+        norm = np.linalg.norm(x)
+        if norm < self.epsilon:
+            return True
+    
+        return False
         
     def project(self, q):
         if q.dtype != np.double:
-            import pdb; pdb.set_trace()
+            raise Exception("q is not double")
         # assert(q.dtype == np.double)
         # q = q.astype(np.double)
         r = self.constraint.project(q)
@@ -49,6 +61,15 @@ class ConstraintBase(object):
     def sample(self):
         q = np.random.uniform(low=self.lb, high=self.ub)
         return q
+    
+    def sample_valid(self, validity_fn):
+        while True:
+            q = self.sample()
+            r = self.project(q)
+            if r is False:
+                continue
+            if validity_fn(q):
+                return q
 
     def solve_arm_ik(self, arm_name, q0, pos, quat):
         iso = vectors_to_isometry(pos, quat)
@@ -120,7 +141,7 @@ class DualArmConstraint(ConstraintBase, ConstraintIKBase):
         lb_single = self.ik_solver.get_lower_bound()
         ub_single = self.ik_solver.get_upper_bound()
         
-        self.planning_scene = PlanningScene([name1, name2], [7, 7], base_frame_id=base, **kwargs)
+        self.planning_scene = PlanningScene([name1, name2], [7, 7], base_link=base, **kwargs)
 
         # TODO: handle different robots
         self.lb = np.tile(lb_single, 2)
@@ -182,14 +203,14 @@ class OrientationConstraint(ConstraintBase, ConstraintIKBase):
 
 
 class MultiChainConstraint(ConstraintBase, ConstraintIKBase):
-    def __init__(self, names, base, ees, desc='/robot_description', planning_scene=None, planning_scene_name='/planning_scenes_suhan', **kwargs):
-        super(MultiChainConstraint, self).__init__('MultiChainConstraint', dim_constraint=6*(len(names)-1))
-        self.dim_constraint_ik = 6*len(names)
+    def __init__(self, arm_names, base_link, ee_links, desc='/robot_description', planning_scene=None, planning_scene_name='/planning_scenes_suhan', **kwargs):
+        super(MultiChainConstraint, self).__init__('MultiChainConstraint', dim_constraint=6*(len(arm_names)-1))
+        self.dim_constraint_ik = 6*len(arm_names)
         self.constraint = MultiChainConstraintFunctions()
         self.constraint_ik = MultiChainConstraintIK()
         
         nv = NameVector()
-        for name in names:
+        for name in arm_names:
             nv.append(name)
 
         ik_solver_updated = False
@@ -197,8 +218,8 @@ class MultiChainConstraint(ConstraintBase, ConstraintIKBase):
         lb = []
         ub = []
         for c in [self.constraint, self.constraint_ik]:
-            for name, ee in zip(names,ees):
-                ik_solver = c.add_trac_ik_adapter(name, base, ee, 0.1, 1e-6, desc)
+            for name, ee in zip(arm_names,ee_links):
+                ik_solver = c.add_trac_ik_adapter(name, base_link, ee, 0.1, 1e-6, desc)
                 if not ik_solver_updated:
                     self.ik_solvers[name] = ik_solver
                     lb.append(ik_solver.get_lower_bound())
@@ -214,7 +235,7 @@ class MultiChainConstraint(ConstraintBase, ConstraintIKBase):
         self.ub = np.concatenate(ub, axis=0)
         
         if planning_scene is None:
-            self.planning_scene = PlanningScene(names, [7]*len(names), base_frame_id=base, topic_name=planning_scene_name, **kwargs)
+            self.planning_scene = PlanningScene(arm_names, [7]*len(arm_names), topic_name=planning_scene_name, **kwargs)
         # self.planning_scene = PlanningScene(names, [7]*len(names), **kwargs)
 
         # self.lb = self.ik_solvers.get_lower_bound()
