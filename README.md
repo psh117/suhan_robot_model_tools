@@ -42,14 +42,23 @@ Structure what you need to complete after installation
 ## Installation guide
 Install dependencies
 ```sh
+1. melodic
 sudo apt install ros-melodic-trac-ik ros-melodic-moveit
+sudo apt install ros-melodic-combined-robot-hw
+
+2. noetic
+sudo apt install ros-noetic-trac-ik ros-noetic-moveit
+sudo apt install ros-noetic-combined-robot-hw
+sudo apt install ros-noetic-nlopt
+
+pip install tqdm
+sudo apt install libnlopt-dev
+sudo apt install libnlopt-cxx-dev
+sudo apt install python-numpy
 ```
 
 Install step and running code example
 ```sh
-
-sudo apt install ros-melodic-combined-robot-hw
-pip install tqdm
 
 cd ~/catkin_ws/src/
 
