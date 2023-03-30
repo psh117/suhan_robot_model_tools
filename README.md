@@ -64,7 +64,7 @@ cd ~/catkin_ws/src/
 
 git clone https://github.com/psh117/assembly_moveit_config
 git clone https://github.com/psh117/assembly_env_description
-git clone -b develop https://github.com/psh117/franka_ros.git
+git clone https://github.com/psh117/suhan_robot_model_tools.git
 
 catkin build
 
