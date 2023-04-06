@@ -4,7 +4,7 @@ import numpy as np
 from srmt.planning_scene import PlanningScene
 from srmt.utils import ros_init
 
-import rospy
+import time
 
 class ConstraintBase(object):
     def __init__(self, name, dim_constraint):
@@ -62,14 +62,16 @@ class ConstraintBase(object):
         q = np.random.uniform(low=self.lb, high=self.ub)
         return q
     
-    def sample_valid(self, validity_fn):
-        while True:
+    def sample_valid(self, validity_fn, timeout=10.0):
+        start_time = time.time()
+        while time.time() - start_time < timeout:
             q = self.sample()
             r = self.project(q)
             if r is False:
                 continue
             if validity_fn(q):
                 return q
+        return False
 
     def solve_arm_ik(self, arm_name, q0, pos, quat):
         iso = vectors_to_isometry(pos, quat)
@@ -248,6 +250,7 @@ class MultiChainConstraint(ConstraintBase, ConstraintIKBase):
             chains (list of np.array): [7D (pos, quat) for each chain]
         """
         self.constraint.set_chains(np.concatenate(chains, axis=0))
+        self.constraint_ik.set_chains(np.concatenate(chains, axis=0))
         
     def set_chains_from_joints(self, q):
         """setter for chains
@@ -256,6 +259,7 @@ class MultiChainConstraint(ConstraintBase, ConstraintIKBase):
             q (np.array): initial joint configurations that will be used to compute the chains
         """
         self.constraint.set_chains_from_joints(q)
+        self.constraint_ik.set_chains_from_joints(q)
 
     def forward_kinematics(self, name, q):
         q = q.astype(np.double)
