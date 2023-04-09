@@ -42,19 +42,12 @@ Structure what you need to complete after installation
 ## Installation guide
 Install dependencies
 ```sh
-1. melodic
-sudo apt install ros-melodic-trac-ik ros-melodic-moveit
-sudo apt install ros-melodic-combined-robot-hw
+sudo apt install ros-$ROS_DISTRO-combined-robot-hw ros-$ROS_DISTRO-trac-ik ros-noetic-moveit
+sudo apt install ros-$ROS_DISTRO-nlopt
 
-2. noetic
-sudo apt install ros-noetic-trac-ik ros-noetic-moveit
-sudo apt install ros-noetic-combined-robot-hw
-sudo apt install ros-noetic-nlopt
+sudo apt install libnlopt-dev libnlopt-cxx-dev python-numpy
 
 pip install tqdm
-sudo apt install libnlopt-dev
-sudo apt install libnlopt-cxx-dev
-sudo apt install python-numpy
 ```
 
 Install step and running code example
