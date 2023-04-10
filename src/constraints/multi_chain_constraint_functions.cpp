@@ -39,7 +39,7 @@ void MultiChainConstraintFunctions::setChainsFromJoints(const Eigen::Ref<const E
 {
   if (q.size() != n_)
   {
-    std::cout << cred << "[error] q size is not correct" << creset << std::endl;
+    std::cout << cred << "[error] q size is not correct q.size() : " << q.size() << ", n_ : " << n_ << creset << std::endl;
     return;
   }
 

@@ -102,7 +102,7 @@ class ConstraintIKBase(object):
     def jacobian_ik(self, q):
         q = q.astype(np.double)
         J = np.zeros([self.dim_constraint_ik, len(q)])
-        self.dim_constraint_ik.jacobian(q, J)
+        self.constraint_ik.jacobian(q, J)
         return J
 
     def update_target(self, x):
@@ -234,9 +234,11 @@ class MultiChainConstraint(ConstraintBase, ConstraintIKBase):
 
             ik_solver_updated = True
 
-            c.set_max_iterations(1000)
-            c.set_tolerance(1e-3)
+            c.set_max_iterations(2000)
+            c.set_tolerance(5e-3)
             c.set_names(nv)
+
+        self.constraint_ik.set_step_size(0.2)
         
         self.lb = np.concatenate(lb, axis=0)
         self.ub = np.concatenate(ub, axis=0)
@@ -295,11 +297,13 @@ class MultiChainConstraint(ConstraintBase, ConstraintIKBase):
         Returns:
             np.array: object pose
         """
-        pos, quat = self.forward_kinematics(self.arm_names[0], q)
+        pos, quat = self.forward_kinematics(self.arm_names[0], q[:7])
         T_0g = get_transform(pos, quat)
         T_0o = T_0g @ self.T_go
-         
-        return self.constraint.get_object_pose(q)
+        
+        pos, quat = get_pose(T_0o)
+        return np.concatenate([pos, quat], axis=0)
+        # return self.constraint.get_object_pose(q)
 
     ## old version (first gripper pose based)
     # def update_target(self, x):

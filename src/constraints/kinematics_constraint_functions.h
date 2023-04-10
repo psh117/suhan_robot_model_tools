@@ -25,6 +25,7 @@ public:
   void setTolerance(double tolerance);
   void setMaxIterations(int maxIterations);
   void setNumFiniteDiff(int num_finite_diff);
+  void setStepSize(double step_size);
   void setDebugLevel(int debug_level);
 protected:
   std::map<std::string, TRACIKAdapterPtr> robot_models_;
@@ -36,5 +37,6 @@ protected:
   double tolerance_{1e-3};
   int maxIterations_{1000};
   int debug_level_{0};
+  double step_size_ {1.0};
 
 };

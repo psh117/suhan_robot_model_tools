@@ -26,6 +26,11 @@ void KinematicsConstraintsFunctions::setNumFiniteDiff(int num_finite_diff)
   num_finite_diff_ = num_finite_diff;
 }
 
+void KinematicsConstraintsFunctions::setStepSize(double step_size)
+{
+  step_size_ = step_size;
+}
+
 void KinematicsConstraintsFunctions::jacobian(const Eigen::Ref<const Eigen::VectorXd> &x, Eigen::Ref<Eigen::MatrixXd> out) 
 {
     Eigen::VectorXd y1 = x;
@@ -106,7 +111,14 @@ bool KinematicsConstraintsFunctions::project(Eigen::Ref<Eigen::VectorXd> x)
     while ((norm = f.squaredNorm()) > squaredTolerance && iter++ < maxIterations_)
     {
         jacobian(x, j);
-        x -= j.jacobiSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(f);
+        // Eigen::VectorXd dx = j.jacobiSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(f);
+        // double max_dist = std::max(dx.maxCoeff(),-dx.minCoeff());
+        // if (max_dist > step_size_)
+        // {
+        //   dx *= step_size_/max_dist;
+        // }
+        // x -= dx; //step_size_ * j.jacobiSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(f);
+        x -= step_size_ * j.jacobiSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(f);
         function(x, f);
         
         for (int i=0; i<x.size(); i++)
