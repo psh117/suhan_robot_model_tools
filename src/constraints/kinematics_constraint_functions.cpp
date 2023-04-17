@@ -31,6 +31,11 @@ void KinematicsConstraintsFunctions::setStepSize(double step_size)
   step_size_ = step_size;
 }
 
+void KinematicsConstraintsFunctions::setEarlyStopping(bool enable)
+{
+  early_stopping_ = enable;
+}
+
 void KinematicsConstraintsFunctions::jacobian(const Eigen::Ref<const Eigen::VectorXd> &x, Eigen::Ref<Eigen::MatrixXd> out) 
 {
     Eigen::VectorXd y1 = x;
@@ -119,16 +124,19 @@ bool KinematicsConstraintsFunctions::project(Eigen::Ref<Eigen::VectorXd> x)
         // }
         // x -= dx; //step_size_ * j.jacobiSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(f);
         x -= step_size_ * j.jacobiSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(f);
-        function(x, f);
         
-        for (int i=0; i<x.size(); i++)
+        if (early_stopping_)
         {
-          if (x[i] < lb_[i])
-            return false;
-            
-          if (x[i] > ub_[i])
-            return false;
+          for (int i=0; i<x.size(); i++)
+          {
+            if (x[i] < lb_[i])
+              return false;
+              
+            if (x[i] > ub_[i])
+              return false;
+          }
         }
+        function(x, f);
     }
 
     return norm < squaredTolerance;

@@ -27,6 +27,8 @@ public:
   void setNumFiniteDiff(int num_finite_diff);
   void setStepSize(double step_size);
   void setDebugLevel(int debug_level);
+  void setEarlyStopping(bool enable);
+
 protected:
   std::map<std::string, TRACIKAdapterPtr> robot_models_;
   Eigen::VectorXd ub_, lb_;
@@ -38,5 +40,5 @@ protected:
   int maxIterations_{1000};
   int debug_level_{0};
   double step_size_ {1.0};
-
+  bool early_stopping_{false};
 };

@@ -63,6 +63,7 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
       .def("set_rot_error_ratio", &DualChainConstraintsFunctions::setRotErrorRatio)
       .def("set_step_size", &DualChainConstraintsFunctions::setStepSize)
       .def("set_debug_level", &DualChainConstraintsFunctions::setDebugLevel)
+      .def("set_early_stopping", &DualChainConstraintsFunctions::setEarlyStopping)
       ;
   bp::class_<DualChainConstraintsFunctions6D, boost::noncopyable>("DualChainConstraintsFunctions6D")
       .def("add_trac_ik_adapter", &DualChainConstraintsFunctions6D::addTRACIKAdapter, bp::return_internal_reference<>())
@@ -78,6 +79,7 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
       .def("set_rot_error_ratio", &DualChainConstraintsFunctions6D::setRotErrorRatio)
       .def("set_step_size", &DualChainConstraintsFunctions6D::setStepSize)
       .def("set_debug_level", &DualChainConstraintsFunctions6D::setDebugLevel)
+      .def("set_early_stopping", &DualChainConstraintsFunctions6D::setEarlyStopping)
       ;
   bp::class_<DualChainConstraintIK, boost::noncopyable>("DualChainConstraintIK")
       .def("add_trac_ik_adapter", &DualChainConstraintIK::addTRACIKAdapter, bp::return_internal_reference<>())
@@ -94,6 +96,7 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
       .def("set_step_size", &DualChainConstraintIK::setStepSize)
       .def("set_target_pose", &DualChainConstraintIK::setTargetPose)
       .def("set_debug_level", &DualChainConstraintIK::setDebugLevel)
+      .def("set_early_stopping", &DualChainConstraintIK::setEarlyStopping)
       ;
   
   bp::class_<OrientationConstraintFunctions, boost::noncopyable>("OrientationConstraintFunctions")
@@ -110,6 +113,7 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
       .def("set_num_finite_diff", &OrientationConstraintFunctions::setNumFiniteDiff)
       .def("set_step_size", &OrientationConstraintFunctions::setStepSize)
       .def("set_debug_level", &OrientationConstraintFunctions::setDebugLevel)
+      .def("set_early_stopping", &OrientationConstraintFunctions::setEarlyStopping)
       ;
       
   bp::class_<OrientationConstrainedIK, boost::noncopyable>("OrientationConstrainedIK")
@@ -127,6 +131,7 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
       .def("set_num_finite_diff", &OrientationConstrainedIK::setNumFiniteDiff)
       .def("set_step_size", &OrientationConstrainedIK::setStepSize)
       .def("set_debug_level", &OrientationConstrainedIK::setDebugLevel)
+      .def("set_early_stopping", &OrientationConstrainedIK::setEarlyStopping)
       ;
   
   bp::class_<MultiChainConstraintFunctions, boost::noncopyable>("MultiChainConstraintFunctions")
@@ -144,6 +149,7 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
       .def("set_rot_error_ratio", &MultiChainConstraintFunctions::setRotErrorRatio)
       .def("set_step_size", &MultiChainConstraintFunctions::setStepSize)
       .def("set_debug_level", &MultiChainConstraintFunctions::setDebugLevel)
+      .def("set_early_stopping", &MultiChainConstraintFunctions::setEarlyStopping)
       ;
 
   bp::class_<MultiChainConstraintIK, boost::noncopyable>("MultiChainConstraintIK")
@@ -162,6 +168,7 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
       .def("set_step_size", &MultiChainConstraintIK::setStepSize)
       .def("set_target_pose", &MultiChainConstraintIK::setTargetPose)
       .def("set_debug_level", &MultiChainConstraintIK::setDebugLevel)
+      .def("set_early_stopping", &MultiChainConstraintIK::setEarlyStopping)
       ;
 //   bp::class_<TripleChainConstraintsFunctions, boost::noncopyable>("TripleChainConstraintsFunctions")
 //       .def("add_trac_ik_adapter", &TripleChainConstraintsFunctions::addTRACIKAdapter, bp::return_internal_reference<>())

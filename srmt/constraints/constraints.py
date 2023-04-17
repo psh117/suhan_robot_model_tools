@@ -12,7 +12,7 @@ class ConstraintBase(object):
 
         self.dim_constraint = dim_constraint
         self.constraint = None
-        self.epsilon = 1e-3
+        self.epsilon = 5e-3
 
     def function(self, q):
         if q.dtype != np.double:
@@ -57,6 +57,9 @@ class ConstraintBase(object):
 
     def set_num_finite_diff(self, num_finite_diff):
         self.constraint.set_num_finite_diff(num_finite_diff)
+
+    def set_early_stopping(self, early_stopping):
+        self.constraint.set_early_stopping(early_stopping)
 
     def sample(self):
         q = np.random.uniform(low=self.lb, high=self.ub)
@@ -140,6 +143,9 @@ class DualArmConstraint(ConstraintBase, ConstraintIKBase):
             c.set_max_iterations(max_iter)
             c.set_tolerance(tol)
             
+        self.constraint_ik.set_step_size(0.5)
+        self.constraint_ik.set_early_stopping(True)
+
         self.ik_solver = ik_solver_1
         self.ik_solvers = {name1: ik_solver_1, name2: ik_solver_2}
 
@@ -187,7 +193,7 @@ class OrientationConstraint(ConstraintBase, ConstraintIKBase):
         self.ik_solver = ik_solver
         
         if planning_scene is None:
-            self.planning_scene = PlanningScene([name], [7], base_frame_id=base, **kwargs)
+            self.planning_scene = PlanningScene([name], [7], base_link=base, **kwargs)
         # self.planning_scene = PlanningScene([name], [7], **kwargs)
 
         self.lb = self.ik_solver.get_lower_bound()
@@ -238,8 +244,8 @@ class MultiChainConstraint(ConstraintBase, ConstraintIKBase):
             c.set_tolerance(5e-3)
             c.set_names(nv)
 
-        self.constraint_ik.set_step_size(0.2)
-        
+        self.constraint_ik.set_step_size(0.1)
+        self.constraint_ik.set_early_stopping(True)
         self.lb = np.concatenate(lb, axis=0)
         self.ub = np.concatenate(ub, axis=0)
         
