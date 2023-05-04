@@ -11,6 +11,8 @@
 #include "constraints/multi_chain_constraint_functions.h"
 #include "constraints/dual_chain_constraint_functions.h"
 
+#include "visual_sim/visual_sim.h"
+
 BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
 {
   namespace ob = ompl::base;
@@ -211,5 +213,18 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
       .def("add_sphere", addSphere)
       .def("add_mesh_from_file", addMeshFromFile)
       .def("set_frame_id", &PlanningSceneCollisionCheck::setFrameID)
+    //   .def("get_planning_scene", &PlanningSceneCollisionCheck::getPlanningScene)
+      .def("get_planning_scene", &PlanningSceneCollisionCheck::getPlanningScene, bp::return_internal_reference<>())
       ;
+
+  bp::class_<std::shared_ptr<planning_scene::PlanningScene>, boost::noncopyable>("PlanningScene", bp::no_init);
+
+  bp::class_<VisualSim, boost::noncopyable>("VisualSim")
+      .def("lookat", &VisualSim::lookat)
+      .def("set_cam_pose", &VisualSim::setCamPose)
+      .def("set_cam_pos", &VisualSim::setCamPos)
+      .def("load_scene", &VisualSim::loadScene)
+      .def("generate_depth_image", &VisualSim::generateDepthImage)
+      ;
+
 }

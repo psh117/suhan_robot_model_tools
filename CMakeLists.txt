@@ -12,6 +12,8 @@ find_package(catkin REQUIRED COMPONENTS
   moveit_core
   trac_ik_lib
   eigenpy
+  pcl_ros
+  gl_depth_sim
   roslib
   moveit_ros_planning
   moveit_ros_planning_interface
@@ -56,6 +58,7 @@ add_library(suhan_robot_model_tools
   src/constraints/dual_chain_constraint_functions.cpp
   src/constraints/multi_chain_constraint_functions.cpp
   src/constraints/orientation_constraint_functions.cpp
+  src/visual_sim/visual_sim.cpp
 )
 
 add_library(suhan_robot_model_tools_wrapper_cpp src/suhan_robot_model_tools_warpper.cpp)
@@ -65,6 +68,7 @@ target_link_libraries(suhan_robot_model_tools
   ${RBDL_LIBRARY}
   ${OMPL_LIBRARIES}
   yaml-cpp
+  gl_depth_sim
 )
 
 target_link_libraries(suhan_robot_model_tools_wrapper_cpp 
@@ -74,6 +78,7 @@ target_link_libraries(suhan_robot_model_tools_wrapper_cpp
   ${RBDL_LIBRARY}
   ${OMPL_LIBRARIES}
   yaml-cpp
+  gl_depth_sim
 )
 
 set_target_properties(suhan_robot_model_tools_wrapper_cpp 
