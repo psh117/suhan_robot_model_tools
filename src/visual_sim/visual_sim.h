@@ -39,14 +39,30 @@ public:
 
   void loadScene(const planning_scene::PlanningScenePtr & scene);
   CloudXYZPtr generatePointCloud();
-  Eigen::Tensor<uint8_t, 3> generateVoxelOccupancy();
+  Eigen::VectorXi generateVoxelOccupancy();
   Eigen::MatrixXf generateDepthImage();
 
   gds::Mesh geomToMesh(const shapes::ShapeConstPtr &shape, 
                        const std::string &name);
   
+  void setGridResolution(const int n_grid);
+  void setSceneBounds(const Eigen::Ref<const Eigen::Vector3d> &scene_bound_min,
+                                       const Eigen::Ref<const Eigen::Vector3d> &scene_bound_max);
+  
 private:
+  // Depth camera
   gds::CameraProperties cam_props_;
   Eigen::Isometry3d cam_pose_;
   std::shared_ptr<gds::SimDepthCamera> sim_;
+  
+  // Voxel occupancy grid
+  std::pair<Eigen::Vector3d,Eigen::Vector3d> occupancy_bound_;
+
+  int n_grid_ {16};
+
+  int n_grids_[3];
+  double length_arr_[3];
+  double resolutions_[3];
+
+  Eigen::Tensor<int, 3> voxel_grid;
 };

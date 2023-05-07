@@ -34,3 +34,12 @@ class VisualSimulator(object):
 
     def generate_depth_image(self):
         return self.vs.generate_depth_image()
+    
+    def generate_voxel_occupancy(self):
+        return self.vs.generate_voxel_occupancy()
+    
+    def set_scene_bounds(self, scene_bound_min, scene_bound_max):
+        return self.vs.set_scene_bounds(scene_bound_min, scene_bound_max)
+
+    def set_grid_resolution(self, n_grid):
+        return self.vs.set_grid_resolution(n_grid)

@@ -225,6 +225,9 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
       .def("set_cam_pos", &VisualSim::setCamPos)
       .def("load_scene", &VisualSim::loadScene)
       .def("generate_depth_image", &VisualSim::generateDepthImage)
+      .def("generate_voxel_occupancy", &VisualSim::generateVoxelOccupancy)
+      .def("set_grid_resolution", &VisualSim::setGridResolution)
+      .def("set_scene_bounds", &VisualSim::setSceneBounds)
       ;
 
 }

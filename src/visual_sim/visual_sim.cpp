@@ -18,6 +18,9 @@ VisualSim::VisualSim()
   cam_props_.cx = cam_props_.width / 2.0;
   cam_props_.cy = cam_props_.height / 2.0;
   sim_ = std::make_shared<gds::SimDepthCamera>(cam_props_);
+
+  occupancy_bound_.first << -1.0, -1.0, -1.0;
+  occupancy_bound_.second << 1.0, 1.0, 1.0;
 }
 
 void VisualSim::setCamPos(const Eigen::Ref<const Eigen::Vector3d> &pos)
@@ -138,12 +141,87 @@ CloudXYZPtr VisualSim::generatePointCloud()
   return std::make_shared<CloudXYZ>(cloud);
 }
 
-// Eigen::Tensor<uint8_t, 3> VisualSim::generateVoxelOccupancy()
-// {
-//   auto depth_image = sim_->render(cam_pose_);
-//   auto voxel_grid = depth_to_voxel_grid(depth_image, cam_props_);
-//   return voxel_grid;
-// }
+void VisualSim::setGridResolution(const int n_grid)
+{
+  n_grid_ = n_grid;
+}
+
+void VisualSim::setSceneBounds(const Eigen::Ref<const Eigen::Vector3d> &scene_bound_min,
+                               const Eigen::Ref<const Eigen::Vector3d> &scene_bound_max)
+{
+  occupancy_bound_.first = scene_bound_min;
+  occupancy_bound_.second = scene_bound_max;
+}
+
+Eigen::VectorXi VisualSim::generateVoxelOccupancy()
+{
+  auto depth_image = sim_->render(cam_pose_);
+
+  const auto &cloud = generatePointCloud();
+  
+  Eigen::Vector3d occupancy_min, occupancy_max;
+  
+  for (int i=0; i<3; ++i)
+  {
+    occupancy_min[i] = occupancy_bound_.first[i];
+    occupancy_max[i] = occupancy_bound_.second[i]; 
+    length_arr_[i] = occupancy_max[i] - occupancy_min[i];
+    n_grids_[i] = n_grid_;
+    resolutions_[i] = length_arr_[i] / n_grids_[i];
+    
+    assert(occupancy_min[i] < occupancy_max[i]);
+  }
+
+  voxel_grid.resize(n_grids_[0],n_grids_[1],n_grids_[2]);
+  voxel_grid.setZero();
+
+  int cnt_cloud = 0;
+  for (const auto &p : *cloud) 
+  {
+    Eigen::Vector3d global_pos = cam_pose_ * Eigen::Vector3d{p.x, p.y, p.z};
+    
+    int indices[3];
+    bool in_bound = true;
+    
+    for (int i=0; i<3; ++i)
+    {
+      if (occupancy_min(i) <= global_pos(i) && 
+                              global_pos(i) < occupancy_max(i))
+      {
+        indices[i] = (global_pos(i) - occupancy_min[i]) / resolutions_[i];
+
+        assert(indices[i] < n_grids_[i]);
+        assert(indices[i] >= 0);
+      }
+      else
+      {
+        in_bound = false;
+        break;
+      }
+    }
+
+    if(in_bound)
+    { 
+      voxel_grid(indices[0],indices[1],indices[2]) = 1;              
+    }
+  }
+
+  Eigen::VectorXi voxel_vector;
+  voxel_vector.resize(n_grid_ * n_grid_ * n_grid_);
+
+  for(int i=0; i<n_grid_; i++)
+  {
+    for(int j=0; j<n_grid_; j++)
+    {
+      for(int k=0; k<n_grid_; k++)
+      {
+        voxel_vector[i*n_grid_*n_grid_ + j*n_grid_ + k] = voxel_grid(i, j, k);
+      } 
+    } 
+  }
+  
+  return voxel_vector;
+}
 
 
 Eigen::MatrixXf VisualSim::generateDepthImage()

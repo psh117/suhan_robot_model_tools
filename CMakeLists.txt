@@ -13,11 +13,13 @@ find_package(catkin REQUIRED COMPONENTS
   trac_ik_lib
   eigenpy
   pcl_ros
-  gl_depth_sim
   roslib
   moveit_ros_planning
   moveit_ros_planning_interface
 )
+
+SET(OpenGL_GL_PREFERENCE "GLVND")
+find_package(gl_depth_sim)
 
 # find_package(Boost REQUIRED COMPONENTS python)
 find_package(PythonLibs 2.7 REQUIRED)
@@ -47,6 +49,7 @@ include_directories(
  ${Boost_INCLUDE_DIRS}
 #  ${RBDL_INCLUDE_DIR}
  ${OMPL_INCLUDE_DIRS}
+ ${gl_depth_sim_INCLUDE_DIRS}
  src
 )
 
@@ -68,7 +71,9 @@ target_link_libraries(suhan_robot_model_tools
   ${RBDL_LIBRARY}
   ${OMPL_LIBRARIES}
   yaml-cpp
-  gl_depth_sim
+  gl_depth_sim::gl_depth_sim
+  gl_depth_sim::glad
+  gl_depth_sim::gl_depth_sim_interfaces
 )
 
 target_link_libraries(suhan_robot_model_tools_wrapper_cpp 
@@ -78,7 +83,9 @@ target_link_libraries(suhan_robot_model_tools_wrapper_cpp
   ${RBDL_LIBRARY}
   ${OMPL_LIBRARIES}
   yaml-cpp
-  gl_depth_sim
+  gl_depth_sim::gl_depth_sim
+  gl_depth_sim::glad
+  gl_depth_sim::gl_depth_sim_interfaces
 )
 
 set_target_properties(suhan_robot_model_tools_wrapper_cpp 
