@@ -228,11 +228,15 @@ void PlanningSceneCollisionCheck::addBox(const Eigen::Ref<const Eigen::Vector3d>
   primitive.dimensions[1] = dim(1);
   primitive.dimensions[2] = dim(2);
 
+  geometry_msgs::Pose empty_pose;
+  empty_pose.orientation.w = 1.0;
+
   moveit_msgs::CollisionObject co;
   co.header.frame_id = obs_frame_id_;
   co.id = id;
   co.primitives.push_back(primitive);
-  co.primitive_poses.push_back(pose);
+  co.primitive_poses.push_back(empty_pose);
+  co.pose = pose;
   co.operation = moveit_msgs::CollisionObject::ADD;
   
 {
@@ -260,11 +264,15 @@ void PlanningSceneCollisionCheck::addCylinder(const Eigen::Ref<const Eigen::Vect
   primitive.dimensions[shape_msgs::SolidPrimitive::CYLINDER_HEIGHT] = dim(0);
   primitive.dimensions[shape_msgs::SolidPrimitive::CYLINDER_RADIUS] = dim(1);
 
+  geometry_msgs::Pose empty_pose;
+  empty_pose.orientation.w = 1.0;
+
   moveit_msgs::CollisionObject co;
   co.header.frame_id = obs_frame_id_;
   co.id = id;
   co.primitives.push_back(primitive);
-  co.primitive_poses.push_back(pose);
+  co.primitive_poses.push_back(empty_pose);
+  co.pose = pose;
   co.operation = moveit_msgs::CollisionObject::ADD;
   
 {
@@ -290,11 +298,15 @@ void PlanningSceneCollisionCheck::addSphere(const double &dim, geometry_msgs::Po
   primitive.dimensions.resize(1);
   primitive.dimensions[shape_msgs::SolidPrimitive::SPHERE_RADIUS] = dim;
 
+  geometry_msgs::Pose empty_pose;
+  empty_pose.orientation.w = 1.0;
+
   moveit_msgs::CollisionObject co;
   co.header.frame_id = obs_frame_id_;
   co.id = id;
   co.primitives.push_back(primitive);
-  co.primitive_poses.push_back(pose);
+  co.primitive_poses.push_back(empty_pose);
+  co.pose = pose;
   co.operation = moveit_msgs::CollisionObject::ADD;
   
 {
@@ -308,6 +320,7 @@ void PlanningSceneCollisionCheck::attachObject(const std::string &object_id, con
   moveit_msgs::AttachedCollisionObject aco;
   aco.object.id = object_id;
   aco.object.operation = moveit_msgs::CollisionObject::ADD;
+  aco.object.pose.orientation.w = 1.0;
   aco.link_name = link_name;
   aco.touch_links = touch_links;
 
