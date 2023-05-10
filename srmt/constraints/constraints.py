@@ -1,4 +1,4 @@
-from suhan_robot_model_tools.suhan_robot_model_tools_wrapper_cpp import NameVector, IntVector, DualChainConstraintsFunctions6D, DualChainConstraintIK, OrientationConstraintFunctions, OrientationConstrainedIK, PlanningSceneCollisionCheck, isometry_to_vectors, vectors_to_isometry, MultiChainConstraintFunctions, MultiChainConstraintIK
+from suhan_robot_model_tools.suhan_robot_model_tools_wrapper_cpp import NameVector, IntVector, DualChainConstraintsFunctions6D, DualChainConstraintIK, OrientationConstraintFunctions, OrientationConstrainedIK, PlanningSceneCollisionCheck, isometry_to_vectors, vectors_to_isometry, MultiChainConstraintFunctions, MultiChainConstraintIK, MultiChainWithFixedOrientationConstraint
 from moveit_ros_planning_interface._moveit_roscpp_initializer import roscpp_init
 import numpy as np
 from srmt.planning_scene import PlanningScene
@@ -218,6 +218,126 @@ class MultiChainConstraint(ConstraintBase, ConstraintIKBase):
         super(MultiChainConstraint, self).__init__('MultiChainConstraint', dim_constraint=6*(len(arm_names)-1))
         self.dim_constraint_ik = 6*len(arm_names)
         self.constraint = MultiChainConstraintFunctions()
+        self.constraint_ik = MultiChainConstraintIK()
+        self.arm_names = arm_names
+        nv = NameVector()
+        self.arm_indices = {}
+        for name in arm_names:
+            nv.append(name)
+            self.arm_indices[name] = len(self.arm_indices)
+
+        ik_solver_updated = False
+        self.ik_solvers = {}
+        lb = []
+        ub = []
+        for c in [self.constraint, self.constraint_ik]:
+            for name, ee in zip(arm_names,ee_links):
+                ik_solver = c.add_trac_ik_adapter(name, base_link, ee, 0.1, 1e-6, desc)
+                if not ik_solver_updated:
+                    self.ik_solvers[name] = ik_solver
+                    lb.append(ik_solver.get_lower_bound())
+                    ub.append(ik_solver.get_upper_bound())
+
+            ik_solver_updated = True
+
+            c.set_max_iterations(2000)
+            c.set_tolerance(5e-3)
+            c.set_names(nv)
+
+        self.constraint_ik.set_step_size(0.1)
+        self.constraint_ik.set_early_stopping(True)
+        self.lb = np.concatenate(lb, axis=0)
+        self.ub = np.concatenate(ub, axis=0)
+        
+        if planning_scene is None:
+            self.planning_scene = PlanningScene(arm_names, [7]*len(arm_names), topic_name=planning_scene_name, **kwargs)
+
+        self.T_og = None
+        self.T_go = None
+        # self.planning_scene = PlanningScene(names, [7]*len(names), **kwargs)
+
+        # self.lb = self.ik_solvers.get_lower_bound()
+        # self.ub = self.ik_solvers.get_upper_bound()
+    
+    def set_chains(self, chains):
+        """setter for chains
+
+        Args:
+            chains (list of np.array): [7D (pos, quat) for each chain]
+        """
+        self.constraint.set_chains(np.concatenate(chains, axis=0))
+        self.constraint_ik.set_chains(np.concatenate(chains, axis=0))
+        
+    def set_chains_from_joints(self, q):
+        """setter for chains
+
+        Args:
+            q (np.array): initial joint configurations that will be used to compute the chains
+        """
+        self.constraint.set_chains_from_joints(q)
+        self.constraint_ik.set_chains_from_joints(q)
+
+    def forward_kinematics(self, name, q):
+        q = q.astype(np.double)
+        iso = self.ik_solvers[name].forward_kinematics(q)
+        d = isometry_to_vectors(iso)
+        pos = d.first
+        quat = d.second
+        return pos, quat
+    
+    def set_grasp_to_object_pose(self, go_pos=None, go_quat=None, T_go=None):
+        if T_go is None:
+            assert go_pos is not None and go_quat is not None, 'go_pos and go_quat must be provided'
+            T_go = get_transform(go_pos, go_quat)
+        else:
+            self.T_go = T_go
+        self.T_og = np.linalg.inv(T_go)
+
+    def get_object_pose(self, q):
+        """get object pose from joint configuration
+        first arm is used to calculate the object pose
+
+        Args:
+            q (np.array): joint configuration
+
+        Returns:
+            np.array: object pose
+        """
+        pos, quat = self.forward_kinematics(self.arm_names[0], q[:7])
+        T_0g = get_transform(pos, quat)
+        T_0o = T_0g @ self.T_go
+        
+        pos, quat = get_pose(T_0o)
+        return np.concatenate([pos, quat], axis=0)
+        # return self.constraint.get_object_pose(q)
+
+    ## old version (first gripper pose based)
+    # def update_target(self, x):
+    #     assert len(x) == 7, 'x must be a 7d vector (pos 3, quat 4)'
+    #     x = x.astype(np.double)
+    #     pos, quat = x[:3], x[3:]
+    #     self.constraint_ik.set_target_pose(pos, quat)
+
+    # new version (object pose based)
+    def update_target(self, x):
+        assert len(x) == 7, 'x must be a 7d vector (pos 3, quat 4)'
+        x = x.astype(np.double)
+        pos, quat = x[:3], x[3:]
+
+        T_0o = get_transform(pos, quat)
+        T_0g = T_0o @ self.T_og
+        print('T_0g', T_0g)
+        print('T_0o', T_0o)
+        print('self.T_og', self.T_og)
+        pos, quat = get_pose(T_0g)
+        self.constraint_ik.set_target_pose(pos, quat)
+
+
+class MultiChainFixedOrientationConstraint(ConstraintBase, ConstraintIKBase):
+    def __init__(self, arm_names, base_link, ee_links, desc='/robot_description', planning_scene=None, planning_scene_name='/planning_scenes_suhan', **kwargs):
+        super(MultiChainFixedOrientationConstraint, self).__init__('MultiChainFixedOrientationConstraint', dim_constraint=6*(len(arm_names)-1))
+        self.dim_constraint_ik = 6*len(arm_names)
+        self.constraint = MultiChainWithFixedOrientationConstraint()
         self.constraint_ik = MultiChainConstraintIK()
         self.arm_names = arm_names
         nv = NameVector()

@@ -32,3 +32,40 @@ public:
 protected:
   Eigen::Isometry3d target_pose_;
 };
+
+
+class MultiChainWithFixedOrientationConstraint : public MultiChainConstraintFunctions
+{
+public:
+  void function(const Eigen::Ref<const Eigen::VectorXd> &x,
+                                    Eigen::Ref<Eigen::VectorXd> out) override;
+  void setNames(const std::vector<std::string> & names);
+  void setOrientationVector(const Eigen::Ref<const Eigen::Vector3d> &orientation_vector);
+  void setOrientationOffset(const Eigen::Ref<const Eigen::Matrix3d> &orientation_offset);
+
+protected:
+  std::vector<Eigen::Isometry3d> chain_transform_;
+  std::vector<std::string> names_;
+  std::vector<int> q_lengths_;
+  double rot_error_ratio_ {1.0};
+
+  Eigen::Vector3d orientaition_vector_;
+  Eigen::Matrix3d orientation_offset_;
+  std::string name_;
+  int q_length_;
+  int axis_;
+};
+
+
+// Use MultiChainConstraintIK instead of this class
+// class MultiChainWithFixedOrientationConstraintIK : public MultiChainWithFixedOrientationConstraint
+// {
+// public:
+//   void function(const Eigen::Ref<const Eigen::VectorXd> &x,
+//                                     Eigen::Ref<Eigen::VectorXd> out) override;
+//   void setTargetPose(const Eigen::Ref<const Eigen::Vector3d> &pos, const Eigen::Ref<const Eigen::Vector4d> &quat);
+//   void setNames(const std::vector<std::string> & names);
+
+// protected:
+//   Eigen::Isometry3d target_pose_;
+// };

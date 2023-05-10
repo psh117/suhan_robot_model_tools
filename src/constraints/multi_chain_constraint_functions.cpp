@@ -175,3 +175,141 @@ void MultiChainConstraintIK::setTargetPose(const Eigen::Ref<const Eigen::Vector3
 {
   target_pose_ = vectorsToIsometry(pos, quat);
 }
+
+
+void MultiChainWithFixedOrientationConstraint::function(const Eigen::Ref<const Eigen::VectorXd> &x,
+                                  Eigen::Ref<Eigen::VectorXd> out)
+{
+  auto & model0 = robot_models_[names_[0]];
+  auto t0 = model0->forwardKinematics(x.segment(0, q_lengths_[0]));
+
+  int cur_idx = q_lengths_[0];
+
+  for (int i=0; i<chain_transform_.size(); ++i)
+  {
+    auto & model = robot_models_[names_[i+1]];
+    auto ti = model->forwardKinematics(x.segment(cur_idx, q_lengths_[i+1]));
+    
+    cur_idx += q_lengths_[i+1];
+    
+    Eigen::Isometry3d chain_error = chain_transform_[i].inverse() * t0.inverse() * ti;
+    Eigen::Matrix3d llg = chain_error.linear().log();
+
+    out[i*6] = chain_error.translation()(0);
+    out[i*6+1] = chain_error.translation()(1);
+    out[i*6+2] = chain_error.translation()(2);
+    out[i*6+3] = llg(2,1) * rot_error_ratio_;
+    out[i*6+4] = llg(0,2) * rot_error_ratio_;
+    out[i*6+5] = llg(1,0) * rot_error_ratio_;
+  }
+
+  Eigen::Matrix3d R = orientation_offset_.transpose() * t0.linear();
+  switch (axis_)
+  {
+  case 0:
+    out[chain_transform_.size()*6] = asin(R(1, 0));
+    out[chain_transform_.size()*6+1] = asin(R(2, 0));
+    break;
+  case 1:
+    out[chain_transform_.size()*6] = asin(R(0, 1));
+    out[chain_transform_.size()*6+1] = asin(R(2, 1));
+    break;
+  case 2:
+    out[chain_transform_.size()*6] = asin(R(0, 2));
+    out[chain_transform_.size()*6+1] = asin(R(1, 2));
+    break;
+  default:
+    break;
+  }
+
+}
+
+void MultiChainWithFixedOrientationConstraint::setOrientationVector(const Eigen::Ref<const Eigen::Vector3d> &orientation_vector)
+{
+  // currently support only one component of orientation vector
+  // x == 1, y == 1, z == 1
+  if (orientation_vector[0] > 0.9)
+  {
+    axis_ = 0;
+  }
+  else if (orientation_vector[1] > 0.9)
+  {
+    axis_ = 1;
+  }
+  else if (orientation_vector[2] > 0.9)
+  {
+    axis_ = 2;
+  }
+  else
+  {
+    std::cout << "orientation vector is not supported" << std::endl;
+  }
+  
+  orientaition_vector_ = orientation_vector;
+}
+
+void MultiChainWithFixedOrientationConstraint::setOrientationOffset(const Eigen::Ref<const Eigen::Matrix3d> &orientation_offset)
+{
+  orientation_offset_ = orientation_offset;
+}
+
+void MultiChainWithFixedOrientationConstraint::setNames(const std::vector<std::string> & names)
+{
+  MultiChainConstraintFunctions::setNames(names);
+  m_ += 2; // Orientation task added
+}
+
+// void MultiChainWithFixedOrientationConstraintIK::function(const Eigen::Ref<const Eigen::VectorXd> &x,
+//                                   Eigen::Ref<Eigen::VectorXd> out)
+// {
+//   auto & model0 = robot_models_[names_[0]];
+//   auto t0 = model0->forwardKinematics(x.segment(0, q_lengths_[0]));
+
+//   int cur_idx = q_lengths_[0];
+
+//   for (int i=0; i<chain_transform_.size(); ++i)
+//   {
+//     auto & model = robot_models_[names_[i+1]];
+//     auto ti = model->forwardKinematics(x.segment(cur_idx, q_lengths_[i+1]));
+    
+//     cur_idx += q_lengths_[i+1];
+    
+//     Eigen::Isometry3d chain_error = chain_transform_[i].inverse() * t0.inverse() * ti;
+//     Eigen::Matrix3d llg = chain_error.linear().log();
+
+//     out[i*6] = chain_error.translation()(0);
+//     out[i*6+1] = chain_error.translation()(1);
+//     out[i*6+2] = chain_error.translation()(2);
+//     out[i*6+3] = llg(2,1) * rot_error_ratio_;
+//     out[i*6+4] = llg(0,2) * rot_error_ratio_;
+//     out[i*6+5] = llg(1,0) * rot_error_ratio_;
+//   }
+
+//   Eigen::Matrix3d R = orientation_offset_.transpose() * t0.linear();
+//   switch (axis_)
+//   {
+//   case 0:
+//     out[chain_transform_.size()*6] = asin(R(1, 0));
+//     out[chain_transform_.size()*6+1] = asin(R(2, 0));
+//     break;
+//   case 1:
+//     out[chain_transform_.size()*6] = asin(R(0, 1));
+//     out[chain_transform_.size()*6+1] = asin(R(2, 1));
+//     break;
+//   case 2:
+//     out[chain_transform_.size()*6] = asin(R(0, 2));
+//     out[chain_transform_.size()*6+1] = asin(R(1, 2));
+//     break;
+//   default:
+//     break;
+//   }
+
+//   auto & target_error = t0.inverse() * target_pose_;
+//   Eigen::Matrix3d llg2 = target_error.linear().log();
+//   out[chain_transform_.size()*6+2] = target_error.translation()(0);
+//   out[chain_transform_.size()*6+3] = target_error.translation()(1);
+//   out[chain_transform_.size()*6+4] = target_error.translation()(2);
+//   out[chain_transform_.size()*6+5] = llg2(2,1) * rot_error_ratio_;
+//   out[chain_transform_.size()*6+6] = llg2(0,2) * rot_error_ratio_;
+//   out[chain_transform_.size()*6+7] = llg2(1,0) * rot_error_ratio_;
+// }

@@ -323,6 +323,7 @@ void PlanningSceneCollisionCheck::detachObject(const std::string &object_id, con
   moveit_msgs::AttachedCollisionObject aco;
   aco.object.id = object_id;
   aco.object.operation = moveit_msgs::CollisionObject::REMOVE;
+  aco.object.pose.orientation.w = 1.0;
   aco.link_name = link_name;
   
 {
