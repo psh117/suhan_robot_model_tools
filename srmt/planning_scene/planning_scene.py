@@ -9,7 +9,7 @@ from srmt.utils import ros_init
 # ros_init = False
 
 class PlanningScene(object):
-    def __init__(self, arm_names, dofs, base_link='/base', hand_names=None, hand_joints=[2], hand_open = [[0.0325,0.0325]], hand_closed = [[0.0, 0.0]], topic_name = "/planning_scenes_suhan", q_init = None):
+    def __init__(self, arm_names, arm_dofs, base_link='/base', hand_names=None, hand_joints=[2], hand_open = [[0.0325,0.0325]], hand_closed = [[0.0, 0.0]], topic_name = "/planning_scenes_suhan", q_init = None):
         
         ros_init('PlanningScene')
 
@@ -23,7 +23,7 @@ class PlanningScene(object):
         names_vec = NameVector()
         dofs_vec = IntVector()
         # print('planning scene!')
-        for name, dof in zip(arm_names, dofs):
+        for name, dof in zip(arm_names, arm_dofs):
             names_vec.append(name)
             dofs_vec.append(dof)
 

@@ -250,7 +250,7 @@ class MultiChainConstraint(ConstraintBase, ConstraintIKBase):
         self.ub = np.concatenate(ub, axis=0)
         
         if planning_scene is None:
-            self.planning_scene = PlanningScene(arm_names, [7]*len(arm_names), topic_name=planning_scene_name, **kwargs)
+            self.planning_scene = PlanningScene(arm_names=arm_names, topic_name=planning_scene_name, **kwargs)
 
         self.T_og = None
         self.T_go = None
