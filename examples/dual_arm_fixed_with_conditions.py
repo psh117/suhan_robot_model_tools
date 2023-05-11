@@ -1,4 +1,4 @@
-from srmt.constraints.constraints import MultiChainConstraint
+from srmt.constraints.constraints import MultiChainFixedOrientationConstraint
 from srmt.utils.transform_utils import get_transform, get_pose
 import numpy as np
 import rospy
@@ -19,10 +19,10 @@ np.random.seed(seed)
 
 # Left: panda_arm_2
 # Right: panda_arm_1
-constraint = MultiChainConstraint(arm_names=['panda_arm_2', 'panda_arm_1'], 
+constraint = MultiChainFixedOrientationConstraint(arm_names=['panda_arm_2', 'panda_arm_1'], 
                                 base_link='base', 
-                                ee_links=['panda_2_hand_tcp', 
-                                'panda_1_hand_tcp'],
+                                ee_links=['panda_2_hand_tcp', 'panda_1_hand_tcp'],
+                                axis=2,
                                 arm_dofs=[7,7], 
                                 hand_names=['hand_2', 'hand_1'], 
                                 hand_joints=[2, 2], 
@@ -80,17 +80,34 @@ def set_constraint(c):
 
 q = np.array([0, 0, 0, -pi/2, 0, pi/2, pi/4, 0, 0, 0, -pi/2, 0, pi/2, pi/4])
 
+np.set_printoptions(precision=5, suppress=True, linewidth=200, threshold=2000)
 d1s = np.linspace(0.2, 0.6, 50)
 for d1 in d1s:
     set_constraint([d1, 0.05, pi/3])
     constraint.solve_ik(q, obj_pose)
+    f = constraint.function(q)
+    print('f', f)
+    constraint.project(q)
+    f = constraint.function(q)
     pc.display(q)
+    print('f', f)
     time.sleep(0.5)
+    # ff
     for _ in range(10):
         timeout = 0.5
-        q = constraint.sample_valid(pc.is_valid, timeout=timeout)
-        pc.display(q)
-        time.sleep(0.3)
+        q2 = constraint.sample_valid(pc.is_valid, timeout=timeout)
+        if q2 is not False: 
+            f = constraint.function(q2)
+            pos, quat = constraint.forward_kinematics('panda_arm_2', q2[:7])
+            T_0g = get_transform(pos, quat)
+            T_og = constraint.T_og
+            rot_diff = np.dot(T_og[:3, :3], T_0g[:3, :3].T)
+            if (rot_diff[2,2] > 0.99):
+                print('rot_diff', rot_diff)
+                print('f2', f)
+                pc.display(q2)
+
+                time.sleep(0.3)
 
 thetas = np.linspace(0, pi/2, 50)
 for theta in thetas:

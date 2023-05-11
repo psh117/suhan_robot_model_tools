@@ -203,7 +203,7 @@ void MultiChainWithFixedOrientationConstraint::function(const Eigen::Ref<const E
     out[i*6+5] = llg(1,0) * rot_error_ratio_;
   }
 
-  Eigen::Matrix3d R = orientation_offset_.transpose() * t0.linear();
+  Eigen::Matrix3d R = orientation_offset_ * t0.linear().transpose();
   switch (axis_)
   {
   case 0:

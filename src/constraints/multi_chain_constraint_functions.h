@@ -44,14 +44,8 @@ public:
   void setOrientationOffset(const Eigen::Ref<const Eigen::Matrix3d> &orientation_offset);
 
 protected:
-  std::vector<Eigen::Isometry3d> chain_transform_;
-  std::vector<std::string> names_;
-  std::vector<int> q_lengths_;
-  double rot_error_ratio_ {1.0};
-
   Eigen::Vector3d orientaition_vector_;
   Eigen::Matrix3d orientation_offset_;
-  std::string name_;
   int q_length_;
   int axis_;
 };

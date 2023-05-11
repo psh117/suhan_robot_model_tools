@@ -334,8 +334,8 @@ class MultiChainConstraint(ConstraintBase, ConstraintIKBase):
 
 
 class MultiChainFixedOrientationConstraint(ConstraintBase, ConstraintIKBase):
-    def __init__(self, arm_names, base_link, ee_links, desc='/robot_description', planning_scene=None, planning_scene_name='/planning_scenes_suhan', **kwargs):
-        super(MultiChainFixedOrientationConstraint, self).__init__('MultiChainFixedOrientationConstraint', dim_constraint=6*(len(arm_names)-1))
+    def __init__(self, arm_names, base_link, ee_links, axis=0, orientation_offset=np.identity(3), desc='/robot_description', planning_scene=None, planning_scene_name='/planning_scenes_suhan', **kwargs):
+        super(MultiChainFixedOrientationConstraint, self).__init__('MultiChainFixedOrientationConstraint', dim_constraint=6*(len(arm_names)-1)+2)
         self.dim_constraint_ik = 6*len(arm_names)
         self.constraint = MultiChainWithFixedOrientationConstraint()
         self.constraint_ik = MultiChainConstraintIK()
@@ -350,6 +350,9 @@ class MultiChainFixedOrientationConstraint(ConstraintBase, ConstraintIKBase):
         self.ik_solvers = {}
         lb = []
         ub = []
+
+        orientation_vector = np.zeros(3)
+        orientation_vector[axis] = 1
         for c in [self.constraint, self.constraint_ik]:
             for name, ee in zip(arm_names,ee_links):
                 ik_solver = c.add_trac_ik_adapter(name, base_link, ee, 0.1, 1e-6, desc)
@@ -361,8 +364,10 @@ class MultiChainFixedOrientationConstraint(ConstraintBase, ConstraintIKBase):
             ik_solver_updated = True
 
             c.set_max_iterations(2000)
-            c.set_tolerance(5e-3)
+            c.set_tolerance(5e-4)
             c.set_names(nv)
+        self.constraint.set_orientation_vector(orientation_vector)
+        self.constraint.set_orientation_offset(orientation_offset)
 
         self.constraint_ik.set_step_size(0.1)
         self.constraint_ik.set_early_stopping(True)
@@ -370,14 +375,10 @@ class MultiChainFixedOrientationConstraint(ConstraintBase, ConstraintIKBase):
         self.ub = np.concatenate(ub, axis=0)
         
         if planning_scene is None:
-            self.planning_scene = PlanningScene(arm_names, [7]*len(arm_names), topic_name=planning_scene_name, **kwargs)
+            self.planning_scene = PlanningScene(arm_names, topic_name=planning_scene_name, **kwargs)
 
         self.T_og = None
         self.T_go = None
-        # self.planning_scene = PlanningScene(names, [7]*len(names), **kwargs)
-
-        # self.lb = self.ik_solvers.get_lower_bound()
-        # self.ub = self.ik_solvers.get_upper_bound()
     
     def set_chains(self, chains):
         """setter for chains
@@ -409,9 +410,12 @@ class MultiChainFixedOrientationConstraint(ConstraintBase, ConstraintIKBase):
         if T_go is None:
             assert go_pos is not None and go_quat is not None, 'go_pos and go_quat must be provided'
             T_go = get_transform(go_pos, go_quat)
+            self.T_go = T_go
         else:
             self.T_go = T_go
         self.T_og = np.linalg.inv(T_go)
+
+        self.constraint.set_orientation_offset(self.T_og[:3,:3])
 
     def get_object_pose(self, q):
         """get object pose from joint configuration
