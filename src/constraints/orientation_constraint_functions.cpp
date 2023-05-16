@@ -1,7 +1,8 @@
 #include "constraints/orientation_constraint_functions.h"
 #include <cmath>
 
-OrientationConstraintFunctions::OrientationConstraintFunctions()
+OrientationConstraintFunctions::OrientationConstraintFunctions(const unsigned int ambientDim, const unsigned int coDim)
+  : KinematicsConstraintsFunctions(ambientDim, coDim)
 {
   // TODO Auto-generated constructor stub
   orientation_offset_.setIdentity();
@@ -9,9 +10,9 @@ OrientationConstraintFunctions::OrientationConstraintFunctions()
 
 }
 void OrientationConstraintFunctions::function(const Eigen::Ref<const Eigen::VectorXd> &x,
-                                              Eigen::Ref<Eigen::VectorXd> out)
+                                              Eigen::Ref<Eigen::VectorXd> out) const
 {
-  auto model = robot_models_[name_];
+  auto model = robot_models_.at(name_);
   auto t1 = model->forwardKinematics(x);
   Eigen::Matrix3d R = orientation_offset_.transpose() * t1.linear();
   switch (axis_)
@@ -65,14 +66,17 @@ void OrientationConstraintFunctions::setOrientationOffset(const Eigen::Ref<const
 void OrientationConstraintFunctions::setName(const std::string & name)
 {
   name_ = name;
-  n_ = robot_models_[name_]->getNumJoints();
+  int n = robot_models_[name_]->getNumJoints();
+  
+  assert(n == n_); 
 
   std::cout << name_ << " and " << "q len: " << n_ << std::endl;
   lb_ = robot_models_[name_]->getLowerBound();
   ub_ = robot_models_[name_]->getUpperBound();
 }
 
-OrientationConstrainedIK::OrientationConstrainedIK()
+OrientationConstrainedIK::OrientationConstrainedIK(const unsigned int ambientDim, const unsigned int coDim)
+  : OrientationConstraintFunctions(ambientDim, coDim)
 {
   // TODO Auto-generated constructor stub
   orientation_offset_.setIdentity();
@@ -80,9 +84,9 @@ OrientationConstrainedIK::OrientationConstrainedIK()
 }
 
 void OrientationConstrainedIK::function(const Eigen::Ref<const Eigen::VectorXd> &x,
-                                        Eigen::Ref<Eigen::VectorXd> out)
+                                        Eigen::Ref<Eigen::VectorXd> out) const
 {
-  auto model = robot_models_[name_];
+  auto model = robot_models_.at(name_);
   auto t1 = model->forwardKinematics(x);
   Eigen::Matrix3d R = orientation_offset_.transpose() * t1.linear();
   switch (axis_)

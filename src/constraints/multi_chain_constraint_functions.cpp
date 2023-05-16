@@ -1,5 +1,9 @@
 #include "constraints/multi_chain_constraint_functions.h"
 
+MultiChainConstraintFunctions::MultiChainConstraintFunctions(const unsigned int ambientDim, const unsigned int coDim)
+  : KinematicsConstraintsFunctions(ambientDim, coDim)
+{
+}
 
 void MultiChainConstraintFunctions::setNames(const std::vector<std::string> & names)
 {
@@ -8,15 +12,17 @@ void MultiChainConstraintFunctions::setNames(const std::vector<std::string> & na
   int robot_num = names_.size();
   q_lengths_.resize(robot_num);
 
-  n_ = 0;
+  int n = 0;
   m_ = 6 * (robot_num - 1);
 
   for (int i=0; i<robot_num; ++i)
   {
     q_lengths_[i] = robot_models_[names_[i]]->getNumJoints();
-    n_ += q_lengths_[i];
+    n += q_lengths_[i];
   }
   
+  assert(n == n_);
+
   for (int i=0; i<robot_num; ++i)
   {
     std::cout << names_[i] << " and " << q_lengths_[i] << std::endl;
@@ -98,15 +104,15 @@ void MultiChainConstraintFunctions::setChains(const Eigen::Ref<const Eigen::Vect
 }
 
 void MultiChainConstraintFunctions::function(const Eigen::Ref<const Eigen::VectorXd> &x,
-                                  Eigen::Ref<Eigen::VectorXd> out)
+                                  Eigen::Ref<Eigen::VectorXd> out) const
 {
-  auto & model0 = robot_models_[names_[0]];
+  auto & model0 = robot_models_.at(names_[0]);
   auto t0 = model0->forwardKinematics(x.segment(0, q_lengths_[0]));
 
   int cur_idx = q_lengths_[0];
   for (int i=0; i<chain_transform_.size(); ++i)
   {
-    auto & model = robot_models_[names_[i+1]];
+    auto & model = robot_models_.at(names_[i+1]);
     auto ti = model->forwardKinematics(x.segment(cur_idx, q_lengths_[i+1]));
     
     cur_idx += q_lengths_[i+1];
@@ -128,6 +134,12 @@ void MultiChainConstraintFunctions::setRotErrorRatio(double ratio)
   rot_error_ratio_ = ratio;
 }
 
+MultiChainConstraintIK::MultiChainConstraintIK(const unsigned int ambientDim, const unsigned int coDim) : 
+  MultiChainConstraintFunctions(ambientDim, coDim)
+{
+
+}
+
 void MultiChainConstraintIK::setNames(const std::vector<std::string> & names)
 {
   MultiChainConstraintFunctions::setNames(names);
@@ -135,16 +147,16 @@ void MultiChainConstraintIK::setNames(const std::vector<std::string> & names)
 }
 
 void MultiChainConstraintIK::function(const Eigen::Ref<const Eigen::VectorXd> &x,
-                                  Eigen::Ref<Eigen::VectorXd> out)
+                                  Eigen::Ref<Eigen::VectorXd> out) const
 {
-  auto & model0 = robot_models_[names_[0]];
+  const auto & model0 = robot_models_.at(names_[0]);
   auto t0 = model0->forwardKinematics(x.segment(0, q_lengths_[0]));
 
   int cur_idx = q_lengths_[0];
 
   for (int i=0; i<chain_transform_.size(); ++i)
   {
-    auto & model = robot_models_[names_[i+1]];
+    const auto & model = robot_models_.at(names_[i+1]);
     auto ti = model->forwardKinematics(x.segment(cur_idx, q_lengths_[i+1]));
     
     cur_idx += q_lengths_[i+1];
@@ -176,18 +188,23 @@ void MultiChainConstraintIK::setTargetPose(const Eigen::Ref<const Eigen::Vector3
   target_pose_ = vectorsToIsometry(pos, quat);
 }
 
+MultiChainWithFixedOrientationConstraint::MultiChainWithFixedOrientationConstraint(const unsigned int ambientDim, const unsigned int coDim) : 
+  MultiChainConstraintFunctions(ambientDim, coDim)
+{
+
+}
 
 void MultiChainWithFixedOrientationConstraint::function(const Eigen::Ref<const Eigen::VectorXd> &x,
-                                  Eigen::Ref<Eigen::VectorXd> out)
+                                  Eigen::Ref<Eigen::VectorXd> out) const
 {
-  auto & model0 = robot_models_[names_[0]];
+  auto & model0 = robot_models_.at(names_[0]);
   auto t0 = model0->forwardKinematics(x.segment(0, q_lengths_[0]));
 
   int cur_idx = q_lengths_[0];
 
   for (int i=0; i<chain_transform_.size(); ++i)
   {
-    auto & model = robot_models_[names_[i+1]];
+    auto & model = robot_models_.at(names_[i+1]);
     auto ti = model->forwardKinematics(x.segment(cur_idx, q_lengths_[i+1]));
     
     cur_idx += q_lengths_[i+1];

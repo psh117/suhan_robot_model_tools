@@ -5,8 +5,9 @@
 class DualChainConstraintsFunctions : public KinematicsConstraintsFunctions
 {
 public:
+  DualChainConstraintsFunctions(const unsigned int ambientDim, const unsigned int coDim);
   void function(const Eigen::Ref<const Eigen::VectorXd> &x,
-                                    Eigen::Ref<Eigen::VectorXd> out) override;
+                                    Eigen::Ref<Eigen::VectorXd> out) const override;
 
   void setChain(const Eigen::Ref<const Eigen::Vector3d> &pos, const Eigen::Ref<const Eigen::Vector4d> &quat);
   void setNames(const std::string & name1, const std::string & name2);
@@ -23,9 +24,9 @@ protected:
 class DualChainConstraintsFunctions6D : public KinematicsConstraintsFunctions
 {
 public:
-  DualChainConstraintsFunctions6D();
+  DualChainConstraintsFunctions6D(const unsigned int ambientDim, const unsigned int coDim);
   void function(const Eigen::Ref<const Eigen::VectorXd> &x,
-                                    Eigen::Ref<Eigen::VectorXd> out) override;
+                                    Eigen::Ref<Eigen::VectorXd> out) const override;
 
   void setChain(const Eigen::Ref<const Eigen::Vector3d> &pos, const Eigen::Ref<const Eigen::Vector4d> &quat);
   void setNames(const std::string & name1, const std::string & name2);
@@ -42,9 +43,9 @@ protected:
 class DualChainConstraintIK : public DualChainConstraintsFunctions6D
 {
 public:
-  DualChainConstraintIK();
+  DualChainConstraintIK(const unsigned int ambientDim, const unsigned int coDim);
   void function(const Eigen::Ref<const Eigen::VectorXd> &x,
-                                    Eigen::Ref<Eigen::VectorXd> out) override;
+                                    Eigen::Ref<Eigen::VectorXd> out) const override;
   void setTargetPose(const Eigen::Ref<const Eigen::Vector3d> &pos, const Eigen::Ref<const Eigen::Vector4d> &quat);
 
 private:
@@ -56,9 +57,9 @@ private:
 class DualChainWithFixedOrientationConstraint : public DualChainConstraintsFunctions6D
 {
 public:
-  DualChainWithFixedOrientationConstraint();
+  DualChainWithFixedOrientationConstraint(const unsigned int ambientDim, const unsigned int coDim);
   void function(const Eigen::Ref<const Eigen::VectorXd> &x,
-                                    Eigen::Ref<Eigen::VectorXd> out) override;
+                                    Eigen::Ref<Eigen::VectorXd> out) const override;
   void setOrientationVector(const Eigen::Ref<const Eigen::Vector3d> &orientation_vector);
   void setOrientationOffset(const Eigen::Ref<const Eigen::Matrix3d> &orientation_offset);
 
@@ -80,9 +81,9 @@ protected:
 class DualChainWithFixedOrientationConstraintIK : public DualChainWithFixedOrientationConstraint
 {
 public:
-  DualChainWithFixedOrientationConstraintIK();
+  DualChainWithFixedOrientationConstraintIK(const unsigned int ambientDim, const unsigned int coDim);
   void function(const Eigen::Ref<const Eigen::VectorXd> &x,
-                                    Eigen::Ref<Eigen::VectorXd> out) override;
+                                    Eigen::Ref<Eigen::VectorXd> out) const override;
   void setTargetPose(const Eigen::Ref<const Eigen::Vector3d> &pos);
 
 

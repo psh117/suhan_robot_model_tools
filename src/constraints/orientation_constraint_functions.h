@@ -5,9 +5,9 @@
 class OrientationConstraintFunctions : public KinematicsConstraintsFunctions
 {
 public:
-  OrientationConstraintFunctions();
+  OrientationConstraintFunctions(const unsigned int ambientDim, const unsigned int coDim);
   void function(const Eigen::Ref<const Eigen::VectorXd> &x,
-                                    Eigen::Ref<Eigen::VectorXd> out) override;
+                                    Eigen::Ref<Eigen::VectorXd> out) const override;
   void setOrientationVector(const Eigen::Ref<const Eigen::Vector3d> &orientation_vector);
   void setOrientationOffset(const Eigen::Ref<const Eigen::Matrix3d> &orientation_offset);
   void setName(const std::string & name);
@@ -23,9 +23,9 @@ protected:
 class OrientationConstrainedIK : public OrientationConstraintFunctions
 {
 public:
-  OrientationConstrainedIK();
+  OrientationConstrainedIK(const unsigned int ambientDim, const unsigned int coDim);
   void function(const Eigen::Ref<const Eigen::VectorXd> &x,
-                                    Eigen::Ref<Eigen::VectorXd> out) override;
+                                    Eigen::Ref<Eigen::VectorXd> out) const override;
   void setTargetPosition(const Eigen::Ref<const Eigen::Vector3d> &target_position);
 
 protected:

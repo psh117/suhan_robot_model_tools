@@ -5,8 +5,9 @@
 class MultiChainConstraintFunctions : public KinematicsConstraintsFunctions
 {
 public:
+  MultiChainConstraintFunctions(const unsigned int ambientDim, const unsigned int coDim);
   void function(const Eigen::Ref<const Eigen::VectorXd> &x,
-                                    Eigen::Ref<Eigen::VectorXd> out) override;
+                                    Eigen::Ref<Eigen::VectorXd> out) const override;
   void setChainsFromJoints(const Eigen::Ref<const Eigen::VectorXd> &q);
   void setChains(const Eigen::Ref<const Eigen::VectorXd> &poses);
   // void setNames(const std::string & name1, const std::string & name2, const std::string & name3);
@@ -24,8 +25,9 @@ protected:
 class MultiChainConstraintIK : public MultiChainConstraintFunctions
 {
 public:
+  MultiChainConstraintIK(const unsigned int ambientDim, const unsigned int coDim);
   void function(const Eigen::Ref<const Eigen::VectorXd> &x,
-                                    Eigen::Ref<Eigen::VectorXd> out) override;
+                                    Eigen::Ref<Eigen::VectorXd> out) const override;
   void setTargetPose(const Eigen::Ref<const Eigen::Vector3d> &pos, const Eigen::Ref<const Eigen::Vector4d> &quat);
   void setNames(const std::vector<std::string> & names);
   
@@ -37,8 +39,9 @@ protected:
 class MultiChainWithFixedOrientationConstraint : public MultiChainConstraintFunctions
 {
 public:
+  MultiChainWithFixedOrientationConstraint(const unsigned int ambientDim, const unsigned int coDim);
   void function(const Eigen::Ref<const Eigen::VectorXd> &x,
-                                    Eigen::Ref<Eigen::VectorXd> out) override;
+                                    Eigen::Ref<Eigen::VectorXd> out) const override;
   void setNames(const std::vector<std::string> & names);
   void setOrientationVector(const Eigen::Ref<const Eigen::Vector3d> &orientation_vector);
   void setOrientationOffset(const Eigen::Ref<const Eigen::Matrix3d> &orientation_offset);
