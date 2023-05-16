@@ -1,5 +1,10 @@
 #include "constraints/kinematics_constraint_functions.h"
 
+KinematicsConstraintsFunctions::KinematicsConstraintsFunctions(const unsigned int ambientDim, const unsigned int coDim)
+  : Constraint(ambientDim, coDim)
+{
+}
+
 TRACIKAdapter & KinematicsConstraintsFunctions::addTRACIKAdapter(const std::string & name, const std::string & base_link, const std::string & tip_link, double max_time, double precision, const std::string& URDF_param)
 {
   robot_models_[name] = std::make_shared<TRACIKAdapter>(base_link, tip_link, max_time, precision, URDF_param);
@@ -36,73 +41,73 @@ void KinematicsConstraintsFunctions::setEarlyStopping(bool enable)
   early_stopping_ = enable;
 }
 
-void KinematicsConstraintsFunctions::jacobian(const Eigen::Ref<const Eigen::VectorXd> &x, Eigen::Ref<Eigen::MatrixXd> out) 
-{
-    Eigen::VectorXd y1 = x;
-    Eigen::VectorXd y2 = x;
-    Eigen::VectorXd t1(m_);
-    Eigen::VectorXd t2(m_);
+// void KinematicsConstraintsFunctions::jacobian(const Eigen::Ref<const Eigen::VectorXd> &x, Eigen::Ref<Eigen::MatrixXd> out) 
+// {
+//     Eigen::VectorXd y1 = x;
+//     Eigen::VectorXd y2 = x;
+//     Eigen::VectorXd t1(m_);
+//     Eigen::VectorXd t2(m_);
 
-    // Use a 7-point central difference stencil on each column.
-    for (std::size_t j = 0; j < n_; j++)
-    {
-        const double ax = std::fabs(x[j]);
-        // Make step size as small as possible while still giving usable accuracy.
-        const double h = std::sqrt(std::numeric_limits<double>::epsilon()) * (ax >= 1 ? ax : 1);
-        if (num_finite_diff_ == 7)
-        {
-          // Can't assume y1[j]-y2[j] == 2*h because of precision errors.
-          y1[j] += h;
-          y2[j] -= h;
-          function(y1, t1);
-          function(y2, t2);
-          const Eigen::VectorXd m1 = (t1 - t2) / (y1[j] - y2[j]); // 2h -> 2* 2/3 -> 1.5
-          y1[j] += h;
-          y2[j] -= h;
-          function(y1, t1);
-          function(y2, t2);
-          const Eigen::VectorXd m2 = (t1 - t2) / (y1[j] - y2[j]); // 4h -> 4 * 3/20 -> 12/20 -> 0.6 
-          y1[j] += h;
-          y2[j] -= h;
-          function(y1, t1);
-          function(y2, t2);
-          const Eigen::VectorXd m3 = (t1 - t2) / (y1[j] - y2[j]); // 6h -> 6 * 1/60 -> 0.1
+//     // Use a 7-point central difference stencil on each column.
+//     for (std::size_t j = 0; j < n_; j++)
+//     {
+//         const double ax = std::fabs(x[j]);
+//         // Make step size as small as possible while still giving usable accuracy.
+//         const double h = std::sqrt(std::numeric_limits<double>::epsilon()) * (ax >= 1 ? ax : 1);
+//         if (num_finite_diff_ == 7)
+//         {
+//           // Can't assume y1[j]-y2[j] == 2*h because of precision errors.
+//           y1[j] += h;
+//           y2[j] -= h;
+//           function(y1, t1);
+//           function(y2, t2);
+//           const Eigen::VectorXd m1 = (t1 - t2) / (y1[j] - y2[j]); // 2h -> 2* 2/3 -> 1.5
+//           y1[j] += h;
+//           y2[j] -= h;
+//           function(y1, t1);
+//           function(y2, t2);
+//           const Eigen::VectorXd m2 = (t1 - t2) / (y1[j] - y2[j]); // 4h -> 4 * 3/20 -> 12/20 -> 0.6 
+//           y1[j] += h;
+//           y2[j] -= h;
+//           function(y1, t1);
+//           function(y2, t2);
+//           const Eigen::VectorXd m3 = (t1 - t2) / (y1[j] - y2[j]); // 6h -> 6 * 1/60 -> 0.1
 
-          out.col(j) = 1.5 * m1 - 0.6 * m2 + 0.1 * m3;
-        }
-        else if (num_finite_diff_ == 5)
-        {
-          // Can't assume y1[j]-y2[j] == 2*h because of precision errors.
-          y1[j] += h;
-          y2[j] -= h;
-          function(y1, t1);
-          function(y2, t2);
-          const Eigen::VectorXd m1 = (t1 - t2) / (y1[j] - y2[j]);
-          y1[j] += h;
-          y2[j] -= h;
-          function(y1, t1);
-          function(y2, t2);
-          const Eigen::VectorXd m2 = (t1 - t2) / (y1[j] - y2[j]);
+//           out.col(j) = 1.5 * m1 - 0.6 * m2 + 0.1 * m3;
+//         }
+//         else if (num_finite_diff_ == 5)
+//         {
+//           // Can't assume y1[j]-y2[j] == 2*h because of precision errors.
+//           y1[j] += h;
+//           y2[j] -= h;
+//           function(y1, t1);
+//           function(y2, t2);
+//           const Eigen::VectorXd m1 = (t1 - t2) / (y1[j] - y2[j]);
+//           y1[j] += h;
+//           y2[j] -= h;
+//           function(y1, t1);
+//           function(y2, t2);
+//           const Eigen::VectorXd m2 = (t1 - t2) / (y1[j] - y2[j]);
 
-          out.col(j) =  (4 * m1 - m2)/3.0;
-        }
-        else if (num_finite_diff_ == 3)
-        {
-          y1[j] += h;
-          y2[j] -= h;
-          function(y1, t1);
-          function(y2, t2);
-          const Eigen::VectorXd m1 = (t1 - t2) / (y1[j] - y2[j]);
+//           out.col(j) =  (4 * m1 - m2)/3.0;
+//         }
+//         else if (num_finite_diff_ == 3)
+//         {
+//           y1[j] += h;
+//           y2[j] -= h;
+//           function(y1, t1);
+//           function(y2, t2);
+//           const Eigen::VectorXd m1 = (t1 - t2) / (y1[j] - y2[j]);
 
-          out.col(j) = m1;
-        }
+//           out.col(j) = m1;
+//         }
 
-        // Reset for next iteration.
-        y1[j] = y2[j] = x[j];
-    }
-}
+//         // Reset for next iteration.
+//         y1[j] = y2[j] = x[j];
+//     }
+// }
 
-bool KinematicsConstraintsFunctions::project(Eigen::Ref<Eigen::VectorXd> x)
+bool KinematicsConstraintsFunctions::project(Eigen::Ref<Eigen::VectorXd> x) const
 {
     // Newton's method
     unsigned int iter = 0;

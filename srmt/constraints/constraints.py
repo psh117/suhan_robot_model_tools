@@ -122,12 +122,14 @@ class ConstraintIKBase(object):
         return r
 
 class DualArmConstraint(ConstraintBase, ConstraintIKBase):
-    def __init__(self, name1='panda_arm_1', name2='panda_arm_2', ee1='panda_1_hand', ee2='panda_2_hand', desc='/robot_description', base='base', max_iter=1000, tol=1e-3, planning_scene_name='/planning_scenes_suhan', **kwargs):
+    def __init__(self, name1='panda_arm_1', name2='panda_arm_2', ee1='panda_1_hand', ee2='panda_2_hand', arm_dofs=[], desc='/robot_description', base='base', max_iter=1000, tol=1e-3, planning_scene_name='/planning_scenes_suhan', **kwargs):
         super(DualArmConstraint, self).__init__(name='DualArmConstraint', dim_constraint=6)
-        self.dim_constraint_ik=12
+        self.dim_constraint = 6
+        self.dim_constraint_ik = 12
 
-        self.constraint = DualChainConstraintsFunctions6D()
-        self.constraint_ik = DualChainConstraintIK()
+        arm_dof = sum(arm_dofs)
+        self.constraint = DualChainConstraintsFunctions6D(arm_dof, self.dim_constraint)
+        self.constraint_ik = DualChainConstraintIK(arm_dof, self.dim_constraint_ik)
 
         self.ik_solver_1 = self.constraint.add_trac_ik_adapter(name1, base, ee1, 0.1, 1e-6, desc)
 
@@ -152,7 +154,7 @@ class DualArmConstraint(ConstraintBase, ConstraintIKBase):
         lb_single = self.ik_solver.get_lower_bound()
         ub_single = self.ik_solver.get_upper_bound()
         
-        self.planning_scene = PlanningScene([name1, name2], [7, 7], base_link=base, **kwargs)
+        self.planning_scene = PlanningScene(arm_names=[name1, name2], arm_dofs=arm_dofs, base_link=base, **kwargs)
 
         # TODO: handle different robots
         self.lb = np.tile(lb_single, 2)
@@ -174,14 +176,17 @@ class DualArmConstraint(ConstraintBase, ConstraintIKBase):
 
 
 class OrientationConstraint(ConstraintBase, ConstraintIKBase):
-    def __init__(self, name, base, ee, axis=0, orientation_offset=np.identity(3),desc='/robot_description', planning_scene=None, planning_scene_name='/planning_scenes_suhan', **kwargs):
+    def __init__(self, name, base, ee, arm_dofs=[7], axis=0, orientation_offset=np.identity(3),desc='/robot_description', planning_scene=None, planning_scene_name='/planning_scenes_suhan', **kwargs):
         # axis = 0: x, 1: y, 2: z
         super(OrientationConstraint, self).__init__('OrientationConstraint', dim_constraint=2)
         # super().__init__('OrientationConstraint', dim_constraint_ik=5)
         self.dim_constraint = 2
         self.dim_constraint_ik = 5
-        self.constraint = OrientationConstraintFunctions()
-        self.constraint_ik = OrientationConstrainedIK()
+
+        arm_dof = sum(arm_dofs)
+
+        self.constraint = OrientationConstraintFunctions(arm_dof, self.dim_constraint)
+        self.constraint_ik = OrientationConstrainedIK(arm_dof, self.dim_constraint_ik)
         orientation_vector = np.zeros(3)
         orientation_vector[axis] = 1
         for c in [self.constraint, self.constraint_ik]:
@@ -193,7 +198,7 @@ class OrientationConstraint(ConstraintBase, ConstraintIKBase):
         self.ik_solver = ik_solver
         
         if planning_scene is None:
-            self.planning_scene = PlanningScene([name], [7], base_link=base, **kwargs)
+            self.planning_scene = PlanningScene([name], arm_dofs=arm_dofs, base_link=base, **kwargs)
         # self.planning_scene = PlanningScene([name], [7], **kwargs)
 
         self.lb = self.ik_solver.get_lower_bound()
@@ -214,11 +219,15 @@ class OrientationConstraint(ConstraintBase, ConstraintIKBase):
 
 
 class MultiChainConstraint(ConstraintBase, ConstraintIKBase):
-    def __init__(self, arm_names, base_link, ee_links, desc='/robot_description', planning_scene=None, planning_scene_name='/planning_scenes_suhan', **kwargs):
+    def __init__(self, arm_names, base_link, ee_links, arm_dofs=[], desc='/robot_description', planning_scene=None, planning_scene_name='/planning_scenes_suhan', **kwargs):
         super(MultiChainConstraint, self).__init__('MultiChainConstraint', dim_constraint=6*(len(arm_names)-1))
+        self.dim_constraint = 6*(len(arm_names)-1)
         self.dim_constraint_ik = 6*len(arm_names)
-        self.constraint = MultiChainConstraintFunctions()
-        self.constraint_ik = MultiChainConstraintIK()
+
+        arm_dof = sum(arm_dofs)
+
+        self.constraint = MultiChainConstraintFunctions(arm_dof, self.dim_constraint)
+        self.constraint_ik = MultiChainConstraintIK(arm_dof, self.dim_constraint_ik)
         self.arm_names = arm_names
         nv = NameVector()
         self.arm_indices = {}
@@ -250,7 +259,7 @@ class MultiChainConstraint(ConstraintBase, ConstraintIKBase):
         self.ub = np.concatenate(ub, axis=0)
         
         if planning_scene is None:
-            self.planning_scene = PlanningScene(arm_names=arm_names, topic_name=planning_scene_name, **kwargs)
+            self.planning_scene = PlanningScene(arm_names=arm_names, arm_dofs=arm_dofs, topic_name=planning_scene_name, **kwargs)
 
         self.T_og = None
         self.T_go = None
@@ -334,11 +343,15 @@ class MultiChainConstraint(ConstraintBase, ConstraintIKBase):
 
 
 class MultiChainFixedOrientationConstraint(ConstraintBase, ConstraintIKBase):
-    def __init__(self, arm_names, base_link, ee_links, axis=0, orientation_offset=np.identity(3), desc='/robot_description', planning_scene=None, planning_scene_name='/planning_scenes_suhan', **kwargs):
+    def __init__(self, arm_names, base_link, ee_links, arm_dofs=[], axis=0, orientation_offset=np.identity(3), desc='/robot_description', planning_scene=None, planning_scene_name='/planning_scenes_suhan', **kwargs):
         super(MultiChainFixedOrientationConstraint, self).__init__('MultiChainFixedOrientationConstraint', dim_constraint=6*(len(arm_names)-1)+2)
+        self.dim_constraint = 6*(len(arm_names)-1)+2
         self.dim_constraint_ik = 6*len(arm_names)
-        self.constraint = MultiChainWithFixedOrientationConstraint()
-        self.constraint_ik = MultiChainConstraintIK()
+
+        arm_dof = sum(arm_dofs)
+
+        self.constraint = MultiChainWithFixedOrientationConstraint(arm_dof, self.dim_constraint)
+        self.constraint_ik = MultiChainConstraintIK(arm_dof, self.dim_constraint_ik)
         self.arm_names = arm_names
         nv = NameVector()
         self.arm_indices = {}
@@ -375,7 +388,7 @@ class MultiChainFixedOrientationConstraint(ConstraintBase, ConstraintIKBase):
         self.ub = np.concatenate(ub, axis=0)
         
         if planning_scene is None:
-            self.planning_scene = PlanningScene(arm_names, topic_name=planning_scene_name, **kwargs)
+            self.planning_scene = PlanningScene(arm_names, arm_dofs=arm_dofs, topic_name=planning_scene_name, **kwargs)
 
         self.T_og = None
         self.T_go = None

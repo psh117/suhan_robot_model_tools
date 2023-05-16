@@ -1,20 +1,27 @@
 #include "constraints/dual_chain_constraint_functions.h"
 #include "dual_chain_constraint_functions.h"
 
+DualChainConstraintsFunctions::DualChainConstraintsFunctions(const unsigned int ambientDim, const unsigned int coDim) : 
+  KinematicsConstraintsFunctions(ambientDim, coDim)
+{
+}
+
 void DualChainConstraintsFunctions::setNames(const std::string & name1, const std::string & name2)
 {
   names_[0] = name1;
   names_[1] = name2;
 
-  n_ = 0;
+  int n = 0;
+  
   for (int i=0; i<2; ++i)
   {
     q_lengths_[i] = robot_models_[names_[i]]->getNumJoints();
-    n_ += q_lengths_[i];
+    n += q_lengths_[i];
   }
   std::cout << names_[0] << " and " << names_[1] << std::endl
   << "q len: " << q_lengths_[0] << " and " << q_lengths_[1] << std::endl;
 
+  assert(n == n_);
   lb_.resize(n_);
   ub_.resize(n_);
   int cur_idx = 0;
@@ -32,10 +39,10 @@ void DualChainConstraintsFunctions::setChain(const Eigen::Ref<const Eigen::Vecto
 }
 
 void DualChainConstraintsFunctions::function(const Eigen::Ref<const Eigen::VectorXd> &x,
-                                  Eigen::Ref<Eigen::VectorXd> out)
+                                  Eigen::Ref<Eigen::VectorXd> out) const
 {
-  auto model1 = robot_models_[names_[0]];
-  auto model2 = robot_models_[names_[1]];
+  auto model1 = robot_models_.at(names_[0]);
+  auto model2 = robot_models_.at(names_[1]);
   const Eigen::Ref<const Eigen::VectorXd> q1 = x.head(q_lengths_[0]);
   const Eigen::Ref<const Eigen::VectorXd> q2 = x.tail(q_lengths_[1]); 
   auto t1 = model1->forwardKinematics(q1);
@@ -59,7 +66,8 @@ void DualChainConstraintsFunctions::setRotErrorRatio(double ratio)
 
 
 ////
-DualChainConstraintsFunctions6D::DualChainConstraintsFunctions6D()
+DualChainConstraintsFunctions6D::DualChainConstraintsFunctions6D(const unsigned int ambientDim, const unsigned int coDim) : 
+  KinematicsConstraintsFunctions(ambientDim, coDim)
 {
   m_ = 6;
 }
@@ -69,14 +77,16 @@ void DualChainConstraintsFunctions6D::setNames(const std::string & name1, const 
   names_[0] = name1;
   names_[1] = name2;
 
-  n_ = 0;
+  int n = 0;
   for (int i=0; i<2; ++i)
   {
     q_lengths_[i] = robot_models_[names_[i]]->getNumJoints();
-    n_ += q_lengths_[i];
+    n += q_lengths_[i];
   }
   std::cout << names_[0] << " and " << names_[1] << std::endl
   << "q len: " << q_lengths_[0] << " and " << q_lengths_[1] << std::endl;
+
+  assert(n == n_);
 
   lb_.resize(n_);
   ub_.resize(n_);
@@ -95,10 +105,10 @@ void DualChainConstraintsFunctions6D::setChain(const Eigen::Ref<const Eigen::Vec
 }
 
 void DualChainConstraintsFunctions6D::function(const Eigen::Ref<const Eigen::VectorXd> &x,
-                                  Eigen::Ref<Eigen::VectorXd> out)
+                                  Eigen::Ref<Eigen::VectorXd> out) const 
 {
-  auto model1 = robot_models_[names_[0]];
-  auto model2 = robot_models_[names_[1]];
+  auto model1 = robot_models_.at(names_[0]);
+  auto model2 = robot_models_.at(names_[1]);
   const Eigen::Ref<const Eigen::VectorXd> q1 = x.head(q_lengths_[0]);
   const Eigen::Ref<const Eigen::VectorXd> q2 = x.tail(q_lengths_[1]); 
   auto t1 = model1->forwardKinematics(q1);
@@ -140,16 +150,17 @@ void DualChainConstraintsFunctions6D::setRotErrorRatio(double ratio)
   rot_error_ratio_ = ratio;
 }
 
-DualChainConstraintIK::DualChainConstraintIK()
+DualChainConstraintIK::DualChainConstraintIK(const unsigned int ambientDim, const unsigned int coDim) : 
+  DualChainConstraintsFunctions6D(ambientDim, coDim)
 {
   target_pose_.setIdentity();
   m_ = 12;
 }
 
-void DualChainConstraintIK::function(const Eigen::Ref<const Eigen::VectorXd> &x, Eigen::Ref<Eigen::VectorXd> out)
+void DualChainConstraintIK::function(const Eigen::Ref<const Eigen::VectorXd> &x, Eigen::Ref<Eigen::VectorXd> out) const
 {
-  auto model1 = robot_models_[names_[0]];
-  auto model2 = robot_models_[names_[1]];
+  auto model1 = robot_models_.at(names_[0]);
+  auto model2 = robot_models_.at(names_[1]);
   const Eigen::Ref<const Eigen::VectorXd> q1 = x.head(q_lengths_[0]);
   const Eigen::Ref<const Eigen::VectorXd> q2 = x.tail(q_lengths_[1]); 
   auto t1 = model1->forwardKinematics(q1);
@@ -210,7 +221,8 @@ void DualChainConstraintIK::setTargetPose(const Eigen::Ref<const Eigen::Vector3d
 // };
 
 
-DualChainWithFixedOrientationConstraint::DualChainWithFixedOrientationConstraint()
+DualChainWithFixedOrientationConstraint::DualChainWithFixedOrientationConstraint(const unsigned int ambientDim, const unsigned int coDim) : 
+  DualChainConstraintsFunctions6D(ambientDim, coDim)
 {
   chain_transform_.setIdentity();
   m_ = 8;
@@ -247,10 +259,10 @@ void DualChainWithFixedOrientationConstraint::setOrientationOffset(const Eigen::
 
 
 void DualChainWithFixedOrientationConstraint::function(const Eigen::Ref<const Eigen::VectorXd> &x,
-                                  Eigen::Ref<Eigen::VectorXd> out)
+                                  Eigen::Ref<Eigen::VectorXd> out) const
 {
-  auto model1 = robot_models_[names_[0]];
-  auto model2 = robot_models_[names_[1]];
+  auto model1 = robot_models_.at(names_[0]);
+  auto model2 = robot_models_.at(names_[1]);
   const Eigen::Ref<const Eigen::VectorXd> q1 = x.head(q_lengths_[0]);
   const Eigen::Ref<const Eigen::VectorXd> q2 = x.tail(q_lengths_[1]); 
   auto t1 = model1->forwardKinematics(q1);
