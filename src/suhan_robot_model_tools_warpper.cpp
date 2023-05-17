@@ -10,6 +10,7 @@
 #include "constraints/orientation_constraint_functions.h"
 #include "constraints/multi_chain_constraint_functions.h"
 #include "constraints/dual_chain_constraint_functions.h"
+#include "constraints/implicit_parallel_function.h"
 
 #include "visual_sim/visual_sim.h"
 
@@ -52,6 +53,7 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
       ;
 
   void (ompl::base::Constraint::*jacobian1)(const Eigen::Ref<const Eigen::VectorXd> &x, Eigen::Ref<Eigen::MatrixXd> out) const = &ompl::base::Constraint::jacobian;
+  bool (ompl::base::Constraint::*project1)(Eigen::Ref<Eigen::VectorXd> x) const = &ompl::base::Constraint::project;
   bp::class_<DualChainConstraintsFunctions, boost::noncopyable>("DualChainConstraintsFunctions",  bp::init<const unsigned int, const unsigned int>())
       .def("add_trac_ik_adapter", &DualChainConstraintsFunctions::addTRACIKAdapter, bp::return_internal_reference<>())
       .def("get_trac_ik_adapter", &DualChainConstraintsFunctions::getTRACIKAdapter, bp::return_internal_reference<>())
@@ -207,7 +209,21 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
 //       .def("set_rot_error_ratio", &TripleChainConstraintsFunctions::setRotErrorRatio)
 //       ;
 
-  bool (ompl::base::Constraint::*project1)(Eigen::Ref<Eigen::VectorXd> x) const = &ompl::base::Constraint::project;
+  bp::class_<ParallelConstraint, boost::noncopyable>("ParallelConstraint",  bp::init<unsigned int, unsigned int,
+                double, double, double>())
+      .def("project", project1)
+      .def("jacobian", jacobian1)
+      .def("function", &ParallelConstraint::function)
+      .def("is_valid", &ParallelConstraint::isValid)
+      .def("get_start", &ParallelConstraint::getStart)
+      .def("get_goal", &ParallelConstraint::getGoal)
+      .def("get_co_dimension", &ParallelConstraint::getCoDimension)
+      .def("get_ambient_dimension", &ParallelConstraint::getAmbientDimension)
+      .def("get_manifold_dimension", &ParallelConstraint::getManifoldDimension)
+      .def("set_tolerance", &ParallelConstraint::setTolerance)
+      .def("set_max_iterations", &ParallelConstraint::setMaxIterations)
+      ;
+
   void (PlanningSceneCollisionCheck::*addBox1)(const Eigen::Ref<const Eigen::Vector3d> &dim, const std::string &id,
               const Eigen::Ref<const Eigen::Vector3d> &pos, const Eigen::Ref<const Eigen::Vector4d> &quat) = &PlanningSceneCollisionCheck::addBox;
   void (PlanningSceneCollisionCheck::*addCylinder1)(const Eigen::Ref<const Eigen::Vector2d> &dim, const std::string &id,
