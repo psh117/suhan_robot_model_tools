@@ -1,4 +1,4 @@
-from suhan_robot_model_tools.suhan_robot_model_tools_wrapper_cpp import NameVector, IntVector, DualChainConstraintsFunctions6D, DualChainConstraintIK, OrientationConstraintFunctions, OrientationConstrainedIK, PlanningSceneCollisionCheck, isometry_to_vectors, vectors_to_isometry, MultiChainConstraintFunctions, MultiChainConstraintIK, MultiChainWithFixedOrientationConstraint
+from suhan_robot_model_tools.suhan_robot_model_tools_wrapper_cpp import NameVector, IntVector, DualChainConstraintsFunctions6D, DualChainConstraintIK, OrientationConstraintFunctions, OrientationConstrainedIK, PlanningSceneCollisionCheck, isometry_to_vectors, vectors_to_isometry, MultiChainConstraintFunctions, MultiChainConstraintIK, MultiChainWithFixedOrientationConstraint, ParallelConstraint
 from moveit_ros_planning_interface._moveit_roscpp_initializer import roscpp_init
 import numpy as np
 from srmt.planning_scene import PlanningScene
@@ -466,3 +466,49 @@ class MultiChainFixedOrientationConstraint(ConstraintBase, ConstraintIKBase):
 
         pos, quat = get_pose(T_0g)
         self.constraint_ik.set_target_pose(pos, quat)
+
+class ParallelChainConstraint(ConstraintBase):
+    def __init__(self, links=3, chain_num=4, radius=1, length=1, joint_radius=0.2, **kwargs):
+        """
+        ParallelChainConstraint
+        
+        links: number of links in each kinematic chain. Minimum is 3. Must be odd.
+        chain_num: number of chains in parallel mechanism. Minimum is 2.
+        """
+        # super(ParallelChainConstraint, self).__init__('ParallelChainConstraint', dim_constraint=dim_constraint)
+        self.constraint = ParallelConstraint(links, chain_num, radius, length, joint_radius)
+        self.q_dim = self.constraint.get_ambient_dimension()
+        self.l_dim = self.constraint.get_co_dimension()
+        self.dim_constraint = self.l_dim
+
+        print('q_dim', self.q_dim)
+        print('l_dim', self.l_dim)
+        # self.constraint.set_max_iterations(2000)
+        # self.constraint.set_tolerance(5e-4)
+
+        self.lb = np.zeros(self.q_dim)
+        self.ub = np.zeros(self.q_dim)
+
+        for c in range(chain_num):
+            o = 3 * c * links
+            for i in range(links):
+                self.lb[o + 3 * i + 0] = -i - 2
+                self.lb[o + 3 * i + 1] = -i - 2
+                self.lb[o + 3 * i + 2] = -i - 2
+
+                self.ub[o + 3 * i + 0] = i + 2
+                self.ub[o + 3 * i + 1] = i + 2
+                self.ub[o + 3 * i + 2] = i + 2
+
+    def get_start(self):
+        q = np.zeros(self.q_dim)
+        self.constraint.get_start(q)
+        return q
+
+    def get_goal(self):
+        q = np.zeros(self.q_dim)
+        self.constraint.get_goal(q)
+        return q
+        
+    def is_valid(self, q):
+        return self.constraint.is_valid(q)

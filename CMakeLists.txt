@@ -61,6 +61,7 @@ add_library(suhan_robot_model_tools
   src/constraints/dual_chain_constraint_functions.cpp
   src/constraints/multi_chain_constraint_functions.cpp
   src/constraints/orientation_constraint_functions.cpp
+  src/constraints/implicit_parallel_function.cpp
   src/visual_sim/visual_sim.cpp
 )
 
