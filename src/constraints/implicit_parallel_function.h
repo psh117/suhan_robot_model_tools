@@ -105,8 +105,11 @@ public:
     void getStart(Eigen::Ref<Eigen::VectorXd> x) override;
     void getGoal(Eigen::Ref<Eigen::VectorXd> x) override;
 
+    bool project(Eigen::Ref<Eigen::VectorXd> x) const override;
+
     ob::StateSpacePtr createSpace() const;
-    bool isValid(const Eigen::Ref<const Eigen::VectorXd> &x);
+    bool isValid(const Eigen::Ref<const Eigen::VectorXd> &x) const;
+    void setEarlyStopping(bool enable);
 
     /** Create a projection evaluator for the parallel constraint. Finds the
      * centroid of the platform and project it to a one-dimensional space. */
@@ -121,4 +124,5 @@ private:
     const double radius_;
     const double length_;
     const double jointRadius_;
+    bool early_stopping_ {false};
 };

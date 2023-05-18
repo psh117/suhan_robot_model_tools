@@ -34,7 +34,9 @@ find_package(rostest REQUIRED)
 catkin_python_setup()
 
 catkin_package(
-  # INCLUDE_DIRS include
+  INCLUDE_DIRS src
+  LIBRARIES suhan_robot_model_tools
+  CATKIN_DEPENDS roscpp std_msgs moveit_core trac_ik_lib pcl_ros roslib moveit_ros_planning moveit_ros_planning_interface
 )
 
 ###########
