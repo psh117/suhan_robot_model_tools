@@ -222,6 +222,7 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
       .def("get_manifold_dimension", &ParallelConstraint::getManifoldDimension)
       .def("set_tolerance", &ParallelConstraint::setTolerance)
       .def("set_max_iterations", &ParallelConstraint::setMaxIterations)
+      .def("set_early_stopping", &ParallelConstraint::setEarlyStopping)
       ;
 
   void (PlanningSceneCollisionCheck::*addBox1)(const Eigen::Ref<const Eigen::Vector3d> &dim, const std::string &id,

@@ -219,6 +219,33 @@ ParallelConstraint::ParallelConstraint(unsigned int links, unsigned int chains, 
     addConstraint(std::make_shared<ParallelPlatform>(links, chains, radius));
 }
 
+bool ParallelConstraint::project(Eigen::Ref<Eigen::VectorXd> x) const
+{
+    // Newton's method
+    unsigned int iter = 0;
+    double norm = 0;
+    Eigen::VectorXd f(getCoDimension());
+    Eigen::MatrixXd j(getCoDimension(), n_);
+
+    const double squaredTolerance = tolerance_ * tolerance_;
+
+    function(x, f);
+    while ((norm = f.squaredNorm()) > squaredTolerance && iter++ < maxIterations_)
+    {
+        jacobian(x, j);
+        x -= j.jacobiSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(f);
+        
+        if (early_stopping_)
+        {
+            if (isValid(x) == false)
+                return false;
+        }
+        function(x, f);
+    }
+
+    return norm < squaredTolerance;
+}
+
 void ParallelConstraint::getStart(Eigen::Ref<Eigen::VectorXd> x)
 {
     x = Eigen::VectorXd(3 * links_ * chains_);
@@ -231,6 +258,11 @@ void ParallelConstraint::getGoal(Eigen::Ref<Eigen::VectorXd> x)
     x = Eigen::VectorXd(3 * links_ * chains_);
     for (auto &constraint : constraints_)
         std::dynamic_pointer_cast<ParallelBase>(constraint)->getGoal(x);
+}
+
+void ParallelConstraint::setEarlyStopping(bool enable)
+{
+    early_stopping_ = enable;
 }
 
 ob::StateSpacePtr ParallelConstraint::createSpace() const
@@ -258,7 +290,7 @@ ob::StateSpacePtr ParallelConstraint::createSpace() const
     return rvss;
 }
 
-bool ParallelConstraint::isValid(const Eigen::Ref<const Eigen::VectorXd> &x)
+bool ParallelConstraint::isValid(const Eigen::Ref<const Eigen::VectorXd> &x) const
 {
     for (unsigned int i = 0; i < links_ * chains_; ++i)
     {
