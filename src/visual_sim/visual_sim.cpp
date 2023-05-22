@@ -59,10 +59,10 @@ void VisualSim::loadScene(const planning_scene::PlanningScenePtr & scene)
     shapes::ShapeConstPtr shape = obj->shapes_[0];
     const auto &mesh = geomToMesh(shape, name);
     sim_->add(name, mesh, obj->pose_);
-    std::cout << "Added object: " << name << std::endl;
+    // std::cout << "Added object: " << name << std::endl;
     // print obj->shape_poses_[0]
-    std::cout << obj->shape_poses_[0].matrix() << std::endl;
-    std::cout << obj->pose_.matrix() << std::endl;
+    // std::cout << obj->shape_poses_[0].matrix() << std::endl;
+    // std::cout << obj->pose_.matrix() << std::endl;
   }
 
 }

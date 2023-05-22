@@ -1,1 +1,1 @@
-from .constraints import ConstraintBase, ConstraintIKBase, DualArmConstraint, DualChainConstraintIK, OrientationConstraint, OrientationConstrainedIK, MultiChainConstraint, MultiChainConstraintIK
+from .constraints import ConstraintBase, ConstraintIKBase, DualArmConstraint, DualChainConstraintIK, OrientationConstraint, OrientationConstrainedIK, MultiChainConstraint, MultiChainConstraintIK, MultiChainFixedOrientationConstraint

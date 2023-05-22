@@ -4,7 +4,7 @@ import numpy as np
 import random
 import math
 
-def add_table(pc, pos, dphi, dtheta, length, width, height, d):
+def add_table(pc, id, pos, dphi, dtheta, length, width, height, d):
     quat = [0.0, 0.0, 0.0, 1.0]
     posf = translation(pos, dphi) 
     quatf = rotation(quat, dtheta)
@@ -24,11 +24,11 @@ def add_table(pc, pos, dphi, dtheta, length, width, height, d):
     table_leg_right_front_pose = transform(table_leg_right_front_pose0, dtheta, posf)
     # print('orig_table_leg_left_back_pose', [posf[0]-length/2+d/2, posf[1]+width/2-d/2, posf[2]])
     # print('table_leg_left_back_pose', table_leg_left_back_pose)
-    pc.add_box('table_top', table_top_dim, table_top_pose, quatf)
-    pc.add_box('table_leg_left_back', table_leg_dim, table_leg_left_back_pose, quatf)
-    pc.add_box('table_leg_left_front', table_leg_dim, table_leg_left_front_pose, quatf)
-    pc.add_box('table_leg_right_back', table_leg_dim, table_leg_right_back_pose, quatf)
-    pc.add_box('table_leg_right_front', table_leg_dim, table_leg_right_front_pose, quatf)
+    pc.add_box(id+'_table_top', table_top_dim, table_top_pose, quatf)
+    pc.add_box(id+'_table_leg_left_back', table_leg_dim, table_leg_left_back_pose, quatf)
+    pc.add_box(id+'_table_leg_left_front', table_leg_dim, table_leg_left_front_pose, quatf)
+    pc.add_box(id+'_table_leg_right_back', table_leg_dim, table_leg_right_back_pose, quatf)
+    pc.add_box(id+'_table_leg_right_front', table_leg_dim, table_leg_right_front_pose, quatf)
 
     # for i in range(num_box):
     #     box_dim = [random.uniform(0.1, 0.3), random.uniform(0.1, 0.3), random.uniform(0.1, 0.3)]

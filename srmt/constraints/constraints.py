@@ -253,6 +253,7 @@ class MultiChainConstraint(ConstraintBase, ConstraintIKBase):
             c.set_tolerance(5e-3)
             c.set_names(nv)
 
+        self.constraint.set_early_stopping(True)
         self.constraint_ik.set_step_size(0.1)
         self.constraint_ik.set_early_stopping(True)
         self.lb = np.concatenate(lb, axis=0)
@@ -335,9 +336,9 @@ class MultiChainConstraint(ConstraintBase, ConstraintIKBase):
 
         T_0o = get_transform(pos, quat)
         T_0g = T_0o @ self.T_og
-        print('T_0g', T_0g)
-        print('T_0o', T_0o)
-        print('self.T_og', self.T_og)
+        # print('T_0g', T_0g)
+        # print('T_0o', T_0o)
+        # print('self.T_og', self.T_og)
         pos, quat = get_pose(T_0g)
         self.constraint_ik.set_target_pose(pos, quat)
 
@@ -381,6 +382,7 @@ class MultiChainFixedOrientationConstraint(ConstraintBase, ConstraintIKBase):
             c.set_names(nv)
         self.constraint.set_orientation_vector(orientation_vector)
         self.constraint.set_orientation_offset(orientation_offset)
+        self.constraint.set_early_stopping(True)
 
         self.constraint_ik.set_step_size(0.1)
         self.constraint_ik.set_early_stopping(True)
@@ -477,12 +479,13 @@ class ParallelChainConstraint(ConstraintBase):
         """
         # super(ParallelChainConstraint, self).__init__('ParallelChainConstraint', dim_constraint=dim_constraint)
         self.constraint = ParallelConstraint(links, chain_num, radius, length, joint_radius)
+        self.constraint.set_early_stopping(True)
         self.q_dim = self.constraint.get_ambient_dimension()
         self.l_dim = self.constraint.get_co_dimension()
         self.dim_constraint = self.l_dim
 
-        print('q_dim', self.q_dim)
-        print('l_dim', self.l_dim)
+        # print('q_dim', self.q_dim)
+        # print('l_dim', self.l_dim)
         # self.constraint.set_max_iterations(2000)
         # self.constraint.set_tolerance(5e-4)
 
