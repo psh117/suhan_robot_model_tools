@@ -65,8 +65,10 @@ class PlanningScene(object):
         q = self.add_gripper_to_q(q)
         self.pc.update_joints(q)
 
-    def display(self, q):
-        self.update_joints(q)
+    def display(self, q=None):
+        if q is not None:
+            self.update_joints(q)
+
         self.pc.publish_planning_scene_msg()
 
     def is_valid(self, q):

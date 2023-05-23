@@ -176,7 +176,7 @@ class DualArmConstraint(ConstraintBase, ConstraintIKBase):
 
 
 class OrientationConstraint(ConstraintBase, ConstraintIKBase):
-    def __init__(self, name, base, ee, arm_dofs=[7], axis=0, orientation_offset=np.identity(3),desc='/robot_description', planning_scene=None, planning_scene_name='/planning_scenes_suhan', **kwargs):
+    def __init__(self, arm_names, base_link, ee_links, arm_dofs=[7], axis=0, orientation_offset=np.identity(3),desc='/robot_description', planning_scene=None, planning_scene_name='/planning_scenes_suhan', **kwargs):
         # axis = 0: x, 1: y, 2: z
         super(OrientationConstraint, self).__init__('OrientationConstraint', dim_constraint=2)
         # super().__init__('OrientationConstraint', dim_constraint_ik=5)
@@ -190,15 +190,15 @@ class OrientationConstraint(ConstraintBase, ConstraintIKBase):
         orientation_vector = np.zeros(3)
         orientation_vector[axis] = 1
         for c in [self.constraint, self.constraint_ik]:
-            ik_solver = c.add_trac_ik_adapter(name, base, ee, 0.1, 1e-6, desc)
-            c.set_name(name)
+            ik_solver = c.add_trac_ik_adapter(arm_names[0], base_link, ee_links[0], 0.1, 1e-6, desc)
+            c.set_name(arm_names[0])
             c.set_orientation_vector(orientation_vector)
             c.set_orientation_offset(orientation_offset)
 
         self.ik_solver = ik_solver
         
         if planning_scene is None:
-            self.planning_scene = PlanningScene([name], arm_dofs=arm_dofs, base_link=base, **kwargs)
+            self.planning_scene = PlanningScene(arm_names=arm_names, arm_dofs=arm_dofs, base_link=base_link, **kwargs)
         # self.planning_scene = PlanningScene([name], [7], **kwargs)
 
         self.lb = self.ik_solver.get_lower_bound()
