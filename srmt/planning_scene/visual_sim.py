@@ -6,9 +6,10 @@ import numpy as np
 
 
 class VisualSimulator(object):
-    def __init__(self) -> None:
+    def __init__(self, n_grid=32) -> None:
         # super().__init__()
         self.vs = VisualSim()
+        self.vs.set_grid_resolution(n_grid)
         pass
 
     def load_scene(self, planning_scene : PlanningScene):
