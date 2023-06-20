@@ -16,8 +16,8 @@ protected:
   Eigen::Vector3d orientaition_vector_;
   Eigen::Matrix3d orientation_offset_;
   std::string name_;
-  int q_length_;
-  int axis_;
+  int q_length_ {0};
+  int axis_ {0};
 };
 
 class OrientationConstrainedIK : public OrientationConstraintFunctions

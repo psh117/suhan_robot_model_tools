@@ -9,12 +9,16 @@ from srmt.utils import ros_init
 # ros_init = False
 
 class PlanningScene(object):
-    def __init__(self, arm_names, arm_dofs, base_link='/base', hand_names=None, hand_joints=[2], hand_open = [[0.0325,0.0325]], hand_closed = [[0.0, 0.0]], topic_name = "/planning_scenes_suhan", q_init = None):
+    def __init__(self, arm_names, arm_dofs, base_link='/base', hand_names=None, hand_joints=[2], hand_open = [[0.0325,0.0325]], hand_closed = [[0.0, 0.0]], topic_name = "/planning_scenes_suhan", q_init = None, base_q=None, start_index=None, end_index=None):
         
         ros_init('PlanningScene')
 
         self.pc = PlanningSceneCollisionCheck(topic_name)
         
+        self.base_q = base_q
+        self.start_index = start_index
+        self.end_index = end_index
+
         self.use_hand = False
         if hand_names is not None:
             self.hand_names = hand_names
@@ -71,8 +75,23 @@ class PlanningScene(object):
 
         self.pc.publish_planning_scene_msg()
 
+    def display_single(self, q=None):
+        if self.base_q is not None:
+            self.base_q[self.start_index:self.end_index] = q
+            q = self.base_q
+            
+        if q is not None:
+            self.update_joints(q)
+
+        self.pc.publish_planning_scene_msg()
+
     def is_valid(self, q):
         q = q.astype(np.double)
+
+        if self.base_q is not None:
+            self.base_q[self.start_index:self.end_index] = q
+            q = self.base_q
+            
         q = self.add_gripper_to_q(q)
         return self.pc.is_valid(q)
 

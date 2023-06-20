@@ -176,24 +176,38 @@ class DualArmConstraint(ConstraintBase, ConstraintIKBase):
 
 
 class OrientationConstraint(ConstraintBase, ConstraintIKBase):
-    def __init__(self, arm_names, base_link, ee_links, arm_dofs=[7], axis=0, orientation_offset=np.identity(3),desc='/robot_description', planning_scene=None, planning_scene_name='/planning_scenes_suhan', **kwargs):
+    def __init__(self, arm_names, base_link, ee_links, arm_dofs=[7], constraint_start_index=None, constraint_end_index=None, axis=0, orientation_offset=np.identity(3),desc='/robot_description', planning_scene=None, planning_scene_name='/planning_scenes_suhan', **kwargs):
         # axis = 0: x, 1: y, 2: z
         super(OrientationConstraint, self).__init__('OrientationConstraint', dim_constraint=2)
-        # super().__init__('OrientationConstraint', dim_constraint_ik=5)
         self.dim_constraint = 2
         self.dim_constraint_ik = 5
 
-        arm_dof = sum(arm_dofs)
+        if constraint_start_index is None:
+            # super().__init__('OrientationConstraint', dim_constraint_ik=5)
+            arm_dof = sum(arm_dofs)
 
-        self.constraint = OrientationConstraintFunctions(arm_dof, self.dim_constraint)
-        self.constraint_ik = OrientationConstrainedIK(arm_dof, self.dim_constraint_ik)
-        orientation_vector = np.zeros(3)
-        orientation_vector[axis] = 1
-        for c in [self.constraint, self.constraint_ik]:
-            ik_solver = c.add_trac_ik_adapter(arm_names[0], base_link, ee_links[0], 0.1, 1e-6, desc)
-            c.set_name(arm_names[0])
-            c.set_orientation_vector(orientation_vector)
-            c.set_orientation_offset(orientation_offset)
+            self.constraint = OrientationConstraintFunctions(arm_dof, self.dim_constraint)
+            self.constraint_ik = OrientationConstrainedIK(arm_dof, self.dim_constraint_ik)
+            orientation_vector = np.zeros(3)
+            orientation_vector[axis] = 1
+            for c in [self.constraint, self.constraint_ik]:
+                ik_solver = c.add_trac_ik_adapter(arm_names[0], base_link, ee_links[0], 0.1, 1e-6, desc)
+                c.set_name(arm_names[0])
+                c.set_orientation_vector(orientation_vector)
+                c.set_orientation_offset(orientation_offset)  
+        else:
+            arm_dof = arm_dofs[constraint_start_index]
+
+            self.constraint = OrientationConstraintFunctions(arm_dof, self.dim_constraint)
+            self.constraint_ik = OrientationConstrainedIK(arm_dof, self.dim_constraint_ik)
+            orientation_vector = np.zeros(3)
+            orientation_vector[axis] = 1
+            for c in [self.constraint, self.constraint_ik]:
+                ik_solver = c.add_trac_ik_adapter(arm_names[constraint_start_index], base_link, ee_links[constraint_start_index], 0.1, 1e-6, desc)
+                c.set_name(arm_names[constraint_start_index])
+                c.set_orientation_vector(orientation_vector)
+                c.set_orientation_offset(orientation_offset)  
+                
 
         self.ik_solver = ik_solver
         
@@ -219,41 +233,78 @@ class OrientationConstraint(ConstraintBase, ConstraintIKBase):
 
 
 class MultiChainConstraint(ConstraintBase, ConstraintIKBase):
-    def __init__(self, arm_names, base_link, ee_links, arm_dofs=[], desc='/robot_description', planning_scene=None, planning_scene_name='/planning_scenes_suhan', **kwargs):
-        super(MultiChainConstraint, self).__init__('MultiChainConstraint', dim_constraint=6*(len(arm_names)-1))
-        self.dim_constraint = 6*(len(arm_names)-1)
-        self.dim_constraint_ik = 6*len(arm_names)
+    def __init__(self, arm_names, base_link, ee_links, arm_dofs=[], constraint_start_index=None, constraint_end_index=None, desc='/robot_description', planning_scene=None, planning_scene_name='/planning_scenes_suhan', **kwargs):
+        if constraint_end_index is None:
+            super(MultiChainConstraint, self).__init__('MultiChainConstraint', dim_constraint=6*(len(arm_names)-1))
 
-        arm_dof = sum(arm_dofs)
+            self.dim_constraint = 6*(len(arm_names)-1)
+            self.dim_constraint_ik = 6*len(arm_names)
 
-        self.constraint = MultiChainConstraintFunctions(arm_dof, self.dim_constraint)
-        self.constraint_ik = MultiChainConstraintIK(arm_dof, self.dim_constraint_ik)
-        self.arm_names = arm_names
-        nv = NameVector()
-        self.arm_indices = {}
-        for name in arm_names:
-            nv.append(name)
-            self.arm_indices[name] = len(self.arm_indices)
+            arm_dof = sum(arm_dofs)
 
-        ik_solver_updated = False
-        self.ik_solvers = {}
-        lb = []
-        ub = []
-        for c in [self.constraint, self.constraint_ik]:
-            for name, ee in zip(arm_names,ee_links):
-                ik_solver = c.add_trac_ik_adapter(name, base_link, ee, 0.1, 1e-6, desc)
-                if not ik_solver_updated:
-                    self.ik_solvers[name] = ik_solver
-                    lb.append(ik_solver.get_lower_bound())
-                    ub.append(ik_solver.get_upper_bound())
+            self.constraint = MultiChainConstraintFunctions(arm_dof, self.dim_constraint)
+            self.constraint_ik = MultiChainConstraintIK(arm_dof, self.dim_constraint_ik)
+            self.arm_names = arm_names
+            nv = NameVector()
+            self.arm_indices = {}
+            for name in arm_names:
+                nv.append(name)
+                self.arm_indices[name] = len(self.arm_indices)
 
-            ik_solver_updated = True
+            ik_solver_updated = False
+            self.ik_solvers = {}
+            lb = []
+            ub = []
+            for c in [self.constraint, self.constraint_ik]:
+                for name, ee in zip(arm_names,ee_links):
+                    ik_solver = c.add_trac_ik_adapter(name, base_link, ee, 0.1, 1e-6, desc)
+                    if not ik_solver_updated:
+                        self.ik_solvers[name] = ik_solver
+                        lb.append(ik_solver.get_lower_bound())
+                        ub.append(ik_solver.get_upper_bound())
 
-            c.set_max_iterations(2000)
-            c.set_tolerance(5e-3)
-            c.set_names(nv)
+                ik_solver_updated = True
 
-        self.constraint.set_early_stopping(True)
+                c.set_max_iterations(2000)
+                c.set_tolerance(5e-3)
+                c.set_names(nv)
+        else:
+            super(MultiChainConstraint, self).__init__('MultiChainConstraint', dim_constraint=6*(constraint_end_index-constraint_start_index-1))
+
+            self.dim_constraint = 6*(constraint_end_index-constraint_start_index-1)
+            self.dim_constraint_ik = 6*(constraint_end_index-constraint_start_index)
+
+            arm_dof = sum(arm_dofs[constraint_start_index:constraint_end_index])
+
+            self.constraint = MultiChainConstraintFunctions(arm_dof, self.dim_constraint)
+            self.constraint_ik = MultiChainConstraintIK(arm_dof, self.dim_constraint_ik)
+            self.arm_names = arm_names[constraint_start_index:constraint_end_index]
+            nv = NameVector()
+            self.arm_indices = {}
+            for name in arm_names[constraint_start_index:constraint_end_index]:
+                nv.append(name)
+                self.arm_indices[name] = len(self.arm_indices)
+
+            ik_solver_updated = False
+            self.ik_solvers = {}
+            lb = []
+            ub = []
+            for c in [self.constraint, self.constraint_ik]:
+                for name, ee in zip(arm_names[constraint_start_index:constraint_end_index],ee_links[constraint_start_index:constraint_end_index]):
+                    ik_solver = c.add_trac_ik_adapter(name, base_link, ee, 0.1, 1e-6, desc)
+                    if not ik_solver_updated:
+                        self.ik_solvers[name] = ik_solver
+                        lb.append(ik_solver.get_lower_bound())
+                        ub.append(ik_solver.get_upper_bound())
+
+                ik_solver_updated = True
+
+                c.set_max_iterations(2000)
+                c.set_tolerance(5e-3)
+                c.set_names(nv)
+
+
+        # self.constraint.set_early_stopping(True)
         self.constraint_ik.set_step_size(0.1)
         self.constraint_ik.set_early_stopping(True)
         self.lb = np.concatenate(lb, axis=0)
@@ -344,45 +395,86 @@ class MultiChainConstraint(ConstraintBase, ConstraintIKBase):
 
 
 class MultiChainFixedOrientationConstraint(ConstraintBase, ConstraintIKBase):
-    def __init__(self, arm_names, base_link, ee_links, arm_dofs=[], axis=0, orientation_offset=np.identity(3), desc='/robot_description', planning_scene=None, planning_scene_name='/planning_scenes_suhan', **kwargs):
-        super(MultiChainFixedOrientationConstraint, self).__init__('MultiChainFixedOrientationConstraint', dim_constraint=6*(len(arm_names)-1)+2)
-        self.dim_constraint = 6*(len(arm_names)-1)+2
-        self.dim_constraint_ik = 6*len(arm_names)
+    def __init__(self, arm_names, base_link, ee_links, arm_dofs=[], axis=0, orientation_offset=np.identity(3), constraint_start_index=None, constraint_end_index=None, desc='/robot_description', planning_scene=None, planning_scene_name='/planning_scenes_suhan', **kwargs):
+        if constraint_end_index is None:
+            
+            super(MultiChainFixedOrientationConstraint, self).__init__('MultiChainFixedOrientationConstraint', dim_constraint=6*(len(arm_names)-1)+2)
+            self.dim_constraint = 6*(len(arm_names)-1)+2
+            self.dim_constraint_ik = 6*len(arm_names)
 
-        arm_dof = sum(arm_dofs)
+            arm_dof = sum(arm_dofs)
 
-        self.constraint = MultiChainWithFixedOrientationConstraint(arm_dof, self.dim_constraint)
-        self.constraint_ik = MultiChainConstraintIK(arm_dof, self.dim_constraint_ik)
-        self.arm_names = arm_names
-        nv = NameVector()
-        self.arm_indices = {}
-        for name in arm_names:
-            nv.append(name)
-            self.arm_indices[name] = len(self.arm_indices)
+            self.constraint = MultiChainWithFixedOrientationConstraint(arm_dof, self.dim_constraint)
+            self.constraint_ik = MultiChainConstraintIK(arm_dof, self.dim_constraint_ik)
+            self.arm_names = arm_names
+            nv = NameVector()
+            self.arm_indices = {}
+            for name in arm_names:
+                nv.append(name)
+                self.arm_indices[name] = len(self.arm_indices)
 
-        ik_solver_updated = False
-        self.ik_solvers = {}
-        lb = []
-        ub = []
+            ik_solver_updated = False
+            self.ik_solvers = {}
+            lb = []
+            ub = []
 
-        orientation_vector = np.zeros(3)
-        orientation_vector[axis] = 1
-        for c in [self.constraint, self.constraint_ik]:
-            for name, ee in zip(arm_names,ee_links):
-                ik_solver = c.add_trac_ik_adapter(name, base_link, ee, 0.1, 1e-6, desc)
-                if not ik_solver_updated:
-                    self.ik_solvers[name] = ik_solver
-                    lb.append(ik_solver.get_lower_bound())
-                    ub.append(ik_solver.get_upper_bound())
+            orientation_vector = np.zeros(3)
+            orientation_vector[axis] = 1
+            for c in [self.constraint, self.constraint_ik]:
+                for name, ee in zip(arm_names,ee_links):
+                    ik_solver = c.add_trac_ik_adapter(name, base_link, ee, 0.1, 1e-6, desc)
+                    if not ik_solver_updated:
+                        self.ik_solvers[name] = ik_solver
+                        lb.append(ik_solver.get_lower_bound())
+                        ub.append(ik_solver.get_upper_bound())
 
-            ik_solver_updated = True
+                ik_solver_updated = True
 
-            c.set_max_iterations(2000)
-            c.set_tolerance(5e-4)
-            c.set_names(nv)
-        self.constraint.set_orientation_vector(orientation_vector)
-        self.constraint.set_orientation_offset(orientation_offset)
-        self.constraint.set_early_stopping(True)
+                c.set_max_iterations(2000)
+                c.set_tolerance(5e-4)
+                c.set_names(nv)
+            self.constraint.set_orientation_vector(orientation_vector)
+            self.constraint.set_orientation_offset(orientation_offset)
+        else:
+
+            super(MultiChainFixedOrientationConstraint, self).__init__('MultiChainFixedOrientationConstraint', dim_constraint=6*(constraint_end_index-constraint_start_index-1)+2)
+            self.dim_constraint = 6*(constraint_end_index-constraint_start_index-1)+2
+            self.dim_constraint_ik = 6*(constraint_end_index-constraint_start_index)
+
+            arm_dof = sum(arm_dofs[constraint_start_index:constraint_end_index])
+
+            self.constraint = MultiChainWithFixedOrientationConstraint(arm_dof, self.dim_constraint)
+            self.constraint_ik = MultiChainConstraintIK(arm_dof, self.dim_constraint_ik)
+            self.arm_names = arm_names[constraint_start_index:constraint_end_index]
+            nv = NameVector()
+            self.arm_indices = {}
+            for name in arm_names[constraint_start_index:constraint_end_index]:
+                nv.append(name)
+                self.arm_indices[name] = len(self.arm_indices)
+
+            ik_solver_updated = False
+            self.ik_solvers = {}
+            lb = []
+            ub = []
+
+            orientation_vector = np.zeros(3)
+            orientation_vector[axis] = 1
+            for c in [self.constraint, self.constraint_ik]:
+                for name, ee in zip(arm_names[constraint_start_index:constraint_end_index],ee_links[constraint_start_index:constraint_end_index]):
+                    ik_solver = c.add_trac_ik_adapter(name, base_link, ee, 0.1, 1e-6, desc)
+                    if not ik_solver_updated:
+                        self.ik_solvers[name] = ik_solver
+                        lb.append(ik_solver.get_lower_bound())
+                        ub.append(ik_solver.get_upper_bound())
+
+                ik_solver_updated = True
+
+                c.set_max_iterations(2000)
+                c.set_tolerance(5e-4)
+                c.set_names(nv)
+            self.constraint.set_orientation_vector(orientation_vector)
+            self.constraint.set_orientation_offset(orientation_offset)
+        # self.constraint.set_early_stopping(True)
 
         self.constraint_ik.set_step_size(0.1)
         self.constraint_ik.set_early_stopping(True)
