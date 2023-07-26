@@ -26,10 +26,14 @@ class PlanningScene(object):
             
         names_vec = NameVector()
         dofs_vec = IntVector()
+        self.name_to_indices = {}
         # print('planning scene!')
+        current_idx = 0
         for name, dof in zip(arm_names, arm_dofs):
             names_vec.append(name)
             dofs_vec.append(dof)
+            self.name_to_indices[name] = (current_idx, current_idx+dof)
+            current_idx += dof
 
         self.hand_open = np.array(hand_open, dtype=np.double)
         self.hand_closed = np.array(hand_closed, dtype=np.double)
@@ -53,6 +57,13 @@ class PlanningScene(object):
         # self.pc.add_box(dim,'handbox',pos,quat)
         # touch_links = NameVector()
         # self.pc.attach_object('handbox','panda_1_hand',touch_links)
+
+    def set_planning_joint_group(self, name):
+        self.set_planning_joint_index(*self.name_to_indices[name])
+        
+    def set_planning_joint_index(self, start_index, end_index):
+        self.start_index = start_index
+        self.end_index = end_index
 
     def add_gripper_to_q(self, q):
         q = copy.deepcopy(q)
