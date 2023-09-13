@@ -38,6 +38,7 @@ Structure what you need to complete after installation
 ├── package.xml
 ├── setup.py
 └── README.md
+
 ```
 ## Installation guide
 Install dependencies
@@ -45,7 +46,7 @@ Install dependencies
 sudo apt install ros-$ROS_DISTRO-combined-robot-hw ros-$ROS_DISTRO-trac-ik ros-noetic-moveit
 sudo apt install ros-$ROS_DISTRO-nlopt
 
-sudo apt install libnlopt-dev libnlopt-cxx-dev python-numpy
+sudo apt install libnlopt-dev libnlopt-cxx-dev libglfw3-dev python-numpy
 
 pip install tqdm
 ```
@@ -55,25 +56,12 @@ Install step and running code example
 
 cd ~/catkin_ws/src/
 
-git clone https://github.com/psh117/assembly_moveit_config
-git clone https://github.com/psh117/assembly_env_description
+git clone https://github.com/psh117/gl_depth_sim
 git clone https://github.com/psh117/suhan_robot_model_tools.git
 
 catkin build
 
 source ../devel/setup.bash
-
-roscd assembly_env_description/robots/
-
-roslaunch assembly_moveit_config demo.launch
-
-# quit the launch after the Rviz load
-
-# rosparam set /robot_description "$(xacro assembly_env.urdf.xacro)" 
-
-roscd suhan_robot_model_tools/src/python/
-
-python panda_datagen.py
 ```
 
 ## Code Instruction
