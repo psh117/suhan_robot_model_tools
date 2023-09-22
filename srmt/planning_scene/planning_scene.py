@@ -61,6 +61,9 @@ class PlanningScene(object):
     def set_planning_joint_group(self, name):
         self.set_planning_joint_index(*self.name_to_indices[name])
         
+    def get_joint_start_end_index(self, name):
+        return self.name_to_indices[name]
+    
     def set_planning_joint_index(self, start_index, end_index):
         self.start_index = start_index
         self.end_index = end_index
@@ -76,9 +79,16 @@ class PlanningScene(object):
         return q
 
     def update_joints(self, q):
+        """update whole joints
+
+        Args:
+            q (np.array float): full configurations
+        """
+
         q = q.astype(np.double)
         q = self.add_gripper_to_q(q)
         self.pc.update_joints(q)
+        self.base_q = copy.deepcopy(q)
 
     def display(self, q=None):
         if q is not None:
