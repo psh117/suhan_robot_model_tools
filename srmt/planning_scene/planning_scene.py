@@ -110,8 +110,9 @@ class PlanningScene(object):
         q = q.astype(np.double)
 
         if self.base_q is not None:
-            self.base_q[self.start_index:self.end_index] = q
-            q = self.base_q
+            q_full = copy.deepcopy(self.base_q)
+            q_full[self.start_index:self.end_index] = q
+            q = q_full
             
         q = self.add_gripper_to_q(q)
         return self.pc.is_valid(q)
