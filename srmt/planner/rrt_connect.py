@@ -1,6 +1,6 @@
 import numpy as np
 
-from srmt.planning_scene import PlanningScene
+# from srmt.planning_scene import PlanningScene
 from srmt.planner.abstact_planner import Planner
 from srmt.planner.motion_tree import MotionTree
 
@@ -15,9 +15,12 @@ class GrowStatus(Enum):
     ADVANCED = 3
 
 class SuhanRRTConnect(Planner):
-    def __init__(self, planning_scene : PlanningScene, state_dim=3, lb=None, ub=None, validity_fn=None, start_region_fn=None, goal_region_fn=None) -> None:
-        self.planning_scene = planning_scene
+    def __init__(self, state_dim=3, lb=None, ub=None, validity_fn=None, start_region_fn=None, goal_region_fn=None) -> None:
+        
+        # Please use validity_fn=planning_scene.is_valid if you want to use planning_scene
+        # self.planning_scene = planning_scene
 
+        self.validity_fn = validity_fn
         self.start_tree = MotionTree(name='start_tree', multiple_roots=True if start_region_fn is not None else False)
         self.goal_tree = MotionTree(name='goal_tree', multiple_roots=True if goal_region_fn is not None else False)
         self.start_q = np.array([])
@@ -53,7 +56,8 @@ class SuhanRRTConnect(Planner):
     def is_valid(self,q):
         if (q <self.lb).any() or (q > self.ub).any():
             return False
-        r = self.planning_scene.is_valid(q)
+        # r = self.planning_scene.is_valid(q)
+        r = self.validity_fn(q)
         
         return r
 

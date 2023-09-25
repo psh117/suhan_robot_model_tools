@@ -63,6 +63,21 @@ bool PlanningSceneCollisionCheck::isValid(const Eigen::Ref<const Eigen::VectorXd
   return !collision_result.collision;
 }
 
+bool PlanningSceneCollisionCheck::isCurrentValid() const
+{
+  std::scoped_lock _lock(planning_scene_mtx_);
+  collision_detection::CollisionRequest collision_request;
+  collision_detection::CollisionResult collision_result;
+  collision_request.contacts = true;
+  robot_state::RobotState current_state = planning_scene_->getCurrentState();
+  
+  planning_scene_->checkCollision(collision_request, collision_result, current_state);
+
+  last_collision_result_ = collision_result; 
+  
+  return !collision_result.collision;
+}
+
 void PlanningSceneCollisionCheck::setJointGroupPositions(const std::string& name, const Eigen::Ref<const Eigen::VectorXd> &q)
 {
   std::scoped_lock _lock(planning_scene_mtx_);

@@ -27,6 +27,7 @@ public:
   PlanningSceneCollisionCheck(const std::string & topic_name = "");
   void setGroupNamesAndDofs(const std::vector<std::string> &arm_name, const std::vector<int> & dofs);
   bool isValid(const Eigen::Ref<const Eigen::VectorXd> &q) const;
+  bool isCurrentValid() const;
   double clearance(const Eigen::Ref<const Eigen::VectorXd> &q) const;
 
   void updateJoints(const Eigen::Ref<const Eigen::VectorXd> &q);

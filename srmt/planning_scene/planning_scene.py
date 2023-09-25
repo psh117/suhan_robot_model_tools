@@ -8,8 +8,74 @@ from srmt.utils import ros_init
 
 # ros_init = False
 
-class PlanningScene(object):
-    def __init__(self, arm_names, arm_dofs, base_link='/base', hand_names=None, hand_joints=[2], hand_open = [[0.0325,0.0325]], hand_closed = [[0.0, 0.0]], topic_name = "/planning_scenes_suhan", q_init = None, base_q=None, start_index=None, end_index=None):
+class PlanningSceneLight(object):
+    def __init__(self, topic_name = "/planning_scene") -> None:
+        """Planning Scene Light
+        It does not require full group names and joitn dofs
+        """
+        self.pc = PlanningSceneCollisionCheck(topic_name)
+        
+
+    def update_joints(self, group_name, q):
+        """update whole joints
+
+        Args:
+            group_name (str): group name
+            q (numpy.array of numpy.double): joint values
+        """
+        q = q.astype(np.double)
+        self.pc.set_joint_group_positions(group_name, q)
+
+    def is_current_valid(self) -> bool:
+        """check current state is valid
+
+        Returns:
+            bool: True if valid
+        """
+        return self.pc.is_current_valid()
+    
+    def add_box(self, name, dim, pos, quat):
+        self.pc.add_box(np.array(dim,dtype=np.double),name,
+                        np.array(pos, dtype=np.double),np.array(quat, dtype=np.double))
+
+    def add_cylinder(self, name, height, radius, pos, quat):
+        self.pc.add_cylinder(np.array([height, radius],dtype=np.double), name, 
+                             np.array(pos, dtype=np.double),np.array(quat, dtype=np.double))
+
+    def add_sphere(self, name, radius, pos, quat):
+        self.pc.add_sphere(radius, name, 
+                           np.array(pos, dtype=np.double),np.array(quat, dtype=np.double))
+
+    def add_mesh(self, name, mesh_path, pos, quat):
+        self.pc.add_mesh_from_file(mesh_path, name, 
+                         np.array(pos, dtype=np.double),np.array(quat, dtype=np.double))
+
+    def attach_object(self, object_id, link_name, touch_links=[]):
+        _touch_links = NameVector()
+        
+        for tl in touch_links:
+            _touch_links.append(tl)
+        
+        self.pc.attach_object(object_id, link_name, _touch_links)
+
+    def detach_object(self, object_id, link_name):
+        self.pc.detach_object(object_id, link_name)
+
+    def update_object_pose(self, object_id, pos, quat):
+        self.pc.update_object_pose(object_id, np.array(pos, dtype=np.double),np.array(quat, dtype=np.double))
+
+    def print_current_collision_infos(self):
+        self.pc.print_current_collision_infos()
+
+    def display(self, group_name=None, q=None):
+        if q is not None and group_name is not None:
+            self.update_joints(group_name, q)
+
+        self.pc.publish_planning_scene_msg()
+
+
+class PlanningScene(PlanningSceneLight):
+    def __init__(self, arm_names, arm_dofs, base_link='/base', hand_names=None, hand_joints=[2], hand_open = [[0.0325,0.0325]], hand_closed = [[0.0, 0.0]], topic_name = "/planning_scene", q_init = None, base_q=None, start_index=None, end_index=None):
         
         ros_init('PlanningScene')
 
@@ -117,35 +183,3 @@ class PlanningScene(object):
         q = self.add_gripper_to_q(q)
         return self.pc.is_valid(q)
 
-    def add_box(self, name, dim, pos, quat):
-        self.pc.add_box(np.array(dim,dtype=np.double),name,
-                        np.array(pos, dtype=np.double),np.array(quat, dtype=np.double))
-
-    def add_cylinder(self, name, height, radius, pos, quat):
-        self.pc.add_cylinder(np.array([height, radius],dtype=np.double), name, 
-                             np.array(pos, dtype=np.double),np.array(quat, dtype=np.double))
-
-    def add_sphere(self, name, radius, pos, quat):
-        self.pc.add_sphere(radius, name, 
-                           np.array(pos, dtype=np.double),np.array(quat, dtype=np.double))
-
-    def add_mesh(self, name, mesh_path, pos, quat):
-        self.pc.add_mesh_from_file(mesh_path, name, 
-                         np.array(pos, dtype=np.double),np.array(quat, dtype=np.double))
-
-    def attach_object(self, object_id, link_name, touch_links=[]):
-        _touch_links = NameVector()
-        
-        for tl in touch_links:
-            _touch_links.append(tl)
-        
-        self.pc.attach_object(object_id, link_name, _touch_links)
-
-    def detach_object(self, object_id, link_name):
-        self.pc.detach_object(object_id, link_name)
-
-    def update_object_pose(self, object_id, pos, quat):
-        self.pc.update_object_pose(object_id, np.array(pos, dtype=np.double),np.array(quat, dtype=np.double))
-
-    def print_current_collision_infos(self):
-        self.pc.print_current_collision_infos()
