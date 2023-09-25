@@ -13,6 +13,8 @@ class PlanningSceneLight(object):
         """Planning Scene Light
         It does not require full group names and joitn dofs
         """
+        ros_init('PlanningScene')
+
         self.pc = PlanningSceneCollisionCheck(topic_name)
         self.pc.set_frame_id(base_link)
         
