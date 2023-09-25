@@ -9,11 +9,12 @@ from srmt.utils import ros_init
 # ros_init = False
 
 class PlanningSceneLight(object):
-    def __init__(self, topic_name = "/planning_scene") -> None:
+    def __init__(self, topic_name = "/planning_scene", base_link='/base') -> None:
         """Planning Scene Light
         It does not require full group names and joitn dofs
         """
         self.pc = PlanningSceneCollisionCheck(topic_name)
+        self.pc.set_frame_id(base_link)
         
 
     def update_joints(self, group_name, q):
