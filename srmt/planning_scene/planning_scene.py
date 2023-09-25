@@ -37,6 +37,9 @@ class PlanningSceneLight(object):
         """
         return self.pc.is_current_valid()
     
+    def display(self):
+        self.pc.publish_planning_scene_msg()
+
     def add_box(self, name, dim, pos, quat):
         self.pc.add_box(np.array(dim,dtype=np.double),name,
                         np.array(pos, dtype=np.double),np.array(quat, dtype=np.double))
