@@ -23,8 +23,8 @@ class SuhanRRTConnect(Planner):
         self.validity_fn = validity_fn
         self.start_tree = MotionTree(name='start_tree', multiple_roots=True if start_region_fn is not None else False)
         self.goal_tree = MotionTree(name='goal_tree', multiple_roots=True if goal_region_fn is not None else False)
-        self.start_q = np.array([])
-        self.goal_q = np.array([])
+        self.start_q = None
+        self.goal_q = None
         self.sampled_goals = []
         self.next_goal_index = 0
         self.distance_btw_trees = float('inf')
