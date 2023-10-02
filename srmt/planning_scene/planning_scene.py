@@ -160,7 +160,8 @@ class PlanningScene(PlanningSceneLight):
         q = q.astype(np.double)
         q = self.add_gripper_to_q(q)
         self.pc.update_joints(q)
-        self.base_q = copy.deepcopy(q)
+        if self.base_q is not None:
+            self.base_q = copy.deepcopy(q)
 
     def display(self, q=None):
         if q is not None:
