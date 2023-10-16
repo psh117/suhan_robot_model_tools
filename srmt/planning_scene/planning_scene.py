@@ -56,6 +56,9 @@ class PlanningSceneLight(object):
         self.pc.add_mesh_from_file(mesh_path, name, 
                          np.array(pos, dtype=np.double),np.array(quat, dtype=np.double))
 
+    def remove_object(self, name):
+        self.pc.remove_object(name)
+        
     def attach_object(self, object_id, link_name, touch_links=[]):
         _touch_links = NameVector()
         

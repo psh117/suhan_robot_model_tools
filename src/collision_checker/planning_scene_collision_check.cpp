@@ -372,7 +372,7 @@ void PlanningSceneCollisionCheck::detachAllObjects(const std::string & link_name
 }
 }
 
-void PlanningSceneCollisionCheck::deleteObject(const std::string & object_id)
+void PlanningSceneCollisionCheck::removeObject(const std::string & object_id)
 {
   moveit_msgs::CollisionObject co;
   co.id = object_id;

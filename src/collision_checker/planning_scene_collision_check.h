@@ -58,7 +58,7 @@ public:
   void attachObject(const std::string &object_id, const std::string &link_name, const std::vector<std::string> &touch_links);
   void detachObject(const std::string &object_id, const std::string &link_name);
   void detachAllObjects(const std::string & link_name);
-  void deleteObject(const std::string & object_id);
+  void removeObject(const std::string & object_id);
   // std::vector<std::string> getAttachedObjects(const std::string & link_name);
   std::vector<std::string> getAllAttachedObjects();
   void changeCollision(const std::string &name1, const std::string &name2, bool allowed);
