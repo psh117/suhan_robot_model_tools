@@ -50,6 +50,7 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
       .def("get_jacobian_matrix", &TRACIKAdapter::getJacobianMatrix)
       .def("set_bounds", &TRACIKAdapter::setBounds)
       .def("set_tolerance_bounds", &TRACIKAdapter::setToleranceBounds)
+      .def("set_solve_type", &TRACIKAdapter::setSolveType)
       ;
 
   void (ompl::base::Constraint::*jacobian1)(const Eigen::Ref<const Eigen::VectorXd> &x, Eigen::Ref<Eigen::MatrixXd> out) const = &ompl::base::Constraint::jacobian;

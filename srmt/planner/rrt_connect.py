@@ -15,12 +15,35 @@ class GrowStatus(Enum):
     ADVANCED = 3
 
 class SuhanRRTConnect(Planner):
-    def __init__(self, state_dim=3, lb=None, ub=None, validity_fn=None, start_region_fn=None, goal_region_fn=None) -> None:
+    def __init__(self, state_dim=3, lb=None, ub=None, validity_fn=None, validity_fn_fine=None, start_region_fn=None, goal_region_fn=None) -> None:
         
         # Please use validity_fn=planning_scene.is_valid if you want to use planning_scene
         # self.planning_scene = planning_scene
 
         self.validity_fn = validity_fn
+
+        self.validity_fn_fine = validity_fn_fine # start and goal validity check local planning
+
+        self.validity_check_dist = 0.1 # distance between start and goal for local planning
+
+        if self.validity_fn is not None and self.validity_fn_fine is None:
+
+            def validity_fn_fine_default(q_start, q_goal):
+                total_dist = np.linalg.norm(q_goal - q_start)
+                if total_dist < self.validity_check_dist:
+                    return self.validity_fn(q_goal)
+                
+                num = int(total_dist / self.validity_check_dist)
+                for i in range(num):
+                    ratio = (i+1) / (num+1)
+                    q = (q_goal-q_start) * ratio + q_start
+                    if not self.validity_fn(q):
+                        return False
+                    
+                return True
+            
+            self.validity_fn_fine = validity_fn_fine_default
+            
         self.start_tree = MotionTree(name='start_tree', multiple_roots=True if start_region_fn is not None else False)
         self.goal_tree = MotionTree(name='goal_tree', multiple_roots=True if goal_region_fn is not None else False)
         self.start_q = None
@@ -45,7 +68,7 @@ class SuhanRRTConnect(Planner):
         self.ub = ub
         
         # properties
-        self.max_distance = 0.1
+        self.max_distance = 2.0
 
         self.debug = True
 
@@ -53,12 +76,12 @@ class SuhanRRTConnect(Planner):
         if self.debug:
             print(*args)
     
-    def is_valid(self,q):
-        if (q <self.lb).any() or (q > self.ub).any():
+    def is_valid(self, q_start, q_goal):
+        if (q_goal <self.lb).any() or (q_goal > self.ub).any():
             return False
-        # r = self.planning_scene.is_valid(q)
-        r = self.validity_fn(q)
         
+        r = self.validity_fn_fine(q_start, q_goal)
+
         return r
 
     def set_start(self, q):
@@ -139,8 +162,6 @@ class SuhanRRTConnect(Planner):
                 is_local_start = is_start_tree
                 r, q_des, q_idx = self.grow(other_tree, q_rand)
                 
-                # if r == GrowStatus.TRAPPED:
-                #     pass
                 while r == GrowStatus.ADVANCED:
                     r, q_des, q_idx = self.grow(other_tree, q_rand)
                     
@@ -195,7 +216,7 @@ class SuhanRRTConnect(Planner):
             reach = True
 
 
-        if self.is_valid(q_des) is False:
+        if self.is_valid(q_near, q_des) is False:
             return GrowStatus.TRAPPED, q_des, 0
         
         q_idx = tree.add_node(q_near_idx, q_des)

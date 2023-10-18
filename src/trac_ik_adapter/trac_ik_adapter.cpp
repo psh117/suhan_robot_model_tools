@@ -219,11 +219,14 @@ bool TRACIKAdapter::solve(const Eigen::Ref<const Eigen::VectorXd> &q0, const Eig
   // bounds.rot(0) = 1e-1;
   // bounds.rot(1) = 1e-1;
   // bounds.rot(2) = 1e-1;
-  if (trac_ik_solver_.CartToJnt(jarr_q0, target_frame, result_q, bounds_) >= 0)
+  int e = trac_ik_solver_.CartToJnt(jarr_q0, target_frame, result_q, bounds_);
+  if (e >= 0)
   {
     solution = result_q.data;
     return true;
   }
+
+  std::cout << "solve error. e: " << e << std::endl;
   solution = result_q.data;
   return false;
 }
@@ -235,7 +238,11 @@ Eigen::Isometry3d TRACIKAdapter::forwardKinematics(const Eigen::Ref<const Eigen:
   KDL::Frame frame;
   
   jarr_q.data = q;
-  fk_solver_->JntToCart(jarr_q, frame);
+  int e = fk_solver_->JntToCart(jarr_q, frame);
+  if (e != 0)
+  {
+    std::cout << "forwardKinematics error. e: " << e << std::endl;
+  }
 
   return getEigenFrame(frame);
 }
@@ -250,4 +257,28 @@ Eigen::Matrix<double,6,Eigen::Dynamic> TRACIKAdapter::getJacobianMatrix(const Ei
   jac_solver_->JntToJac(jarr_q, jacobian);
   
   return jacobian.data;
+}
+
+void TRACIKAdapter::setSolveType(const std::string & type)
+{
+  if (type == "Speed")
+  {
+    trac_ik_solver_.SetSolveType(TRAC_IK::SolveType::Speed);
+  }
+  else if (type == "Distance")
+  {
+    trac_ik_solver_.SetSolveType(TRAC_IK::SolveType::Distance);
+  }
+  else if (type == "Manip1")
+  {
+    trac_ik_solver_.SetSolveType(TRAC_IK::SolveType::Manip1);
+  }
+  else if (type == "Manip2")
+  {
+    trac_ik_solver_.SetSolveType(TRAC_IK::SolveType::Manip2);
+  }
+  else
+  {
+    ROS_ERROR("invalid solve type");
+  }
 }
