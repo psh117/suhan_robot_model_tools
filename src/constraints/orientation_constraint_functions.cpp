@@ -70,7 +70,7 @@ void OrientationConstraintFunctions::setName(const std::string & name)
   
   assert(n == n_); 
 
-  std::cout << name_ << " and " << "q len: " << n_ << std::endl;
+  // std::cout << name_ << " and " << "q len: " << n_ << std::endl;
   lb_ = robot_models_[name_]->getLowerBound();
   ub_ = robot_models_[name_]->getUpperBound();
 }
