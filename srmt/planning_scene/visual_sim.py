@@ -38,7 +38,38 @@ class VisualSimulator(object):
     
     def generate_voxel_occupancy(self):
         return self.vs.generate_voxel_occupancy()
+
+    def generate_point_cloud_matrix(self):
+        """
+        Returns:
+            np.ndarray: (n_points, 3) matrix
+        """
+        return self.vs.generate_point_cloud_matrix()
     
+    def generate_local_voxel_occupancy(self, point_cloud_matrix, 
+                                       obj_pos, obj_quat, 
+                                       obj_bound_min, obj_bound_max, 
+                                       n_grids=np.array([32,32,32]), 
+                                       near_distance=0.2, 
+                                       fill_occluded_voxels=False):
+        """
+        Args:
+            point_cloud_matrix (np.ndarray): (n_points, 3) matrix
+            obj_pos (np.ndarray): (3,) vector
+            obj_quat (np.ndarray): (4,) vector
+            obj_bound_min (np.ndarray): (3,) vector
+            obj_bound_max (np.ndarray): (3,) vector
+            n_grids (np.ndarray): (3,) vector of the number of grids in each dimension of the local voxel occupancy
+            near_distance (float): distance to the object that will be used to generate the local voxel occupancy
+            fill_occluded_voxels (bool): whether to fill the occluded voxels to be occupied
+        Returns:
+            np.ndarray: (n_grids[0], n_grids[1], n_grids[2]) matrix
+        """
+
+        return_vec = self.vs.generate_local_voxel_occupancy(point_cloud_matrix, obj_pos, obj_quat, obj_bound_min, obj_bound_max, n_grids, near_distance, fill_occluded_voxels)
+
+        return return_vec.reshape(n_grids[0], n_grids[1], n_grids[2])
+
     def set_scene_bounds(self, scene_bound_min, scene_bound_max):
         return self.vs.set_scene_bounds(scene_bound_min, scene_bound_max)
 

@@ -267,7 +267,10 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
       .def("load_scene", &VisualSim::loadScene)
       .def("generate_depth_image", &VisualSim::generateDepthImage)
       .def("generate_voxel_occupancy", &VisualSim::generateVoxelOccupancy)
+      .def("generate_point_cloud_matrix", &VisualSim::generatePointCloudMatrix)
+      .def("generate_local_voxel_occupancy", &VisualSim::generateLocalVoxelOccupancy)
       .def("set_grid_resolution", &VisualSim::setGridResolution)
+      .def("set_grid_resolutions", &VisualSim::setGridResolutions)
       .def("set_scene_bounds", &VisualSim::setSceneBounds)
       ;
 

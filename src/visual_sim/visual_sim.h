@@ -24,6 +24,8 @@
 #include <gl_depth_sim/sim_depth_camera.h>
 #include <gl_depth_sim/interfaces/pcl_interface.h>
 
+#include "eigen_tools/eigen_tools.h"
+
 typedef pcl::PointCloud<pcl::PointXYZ> CloudXYZ;
 typedef std::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > CloudXYZPtr;
 namespace gds = gl_depth_sim;
@@ -39,6 +41,15 @@ public:
 
   void loadScene(const planning_scene::PlanningScenePtr & scene);
   CloudXYZPtr generatePointCloud();
+  Eigen::MatrixXd generatePointCloudMatrix();
+  Eigen::VectorXi generateLocalVoxelOccupancy(const Eigen::Ref<const Eigen::Matrix<double, -1, 3> > &point_cloud_matrix, 
+                                              const Eigen::Ref<const Eigen::Vector3d> &obj_pos, 
+                                              const Eigen::Ref<const Eigen::Vector4d> &obj_quat, 
+                                              const Eigen::Array3d &obj_bound_min,
+                                              const Eigen::Array3d &obj_bound_max,
+                                              const Eigen::Array3i &n_grids, 
+                                              double near_distance,
+                                              bool fill_occluded_voxels);
   Eigen::VectorXi generateVoxelOccupancy();
   Eigen::MatrixXf generateDepthImage();
 
@@ -46,8 +57,9 @@ public:
                        const std::string &name);
   
   void setGridResolution(const int n_grid);
+  void setGridResolutions(const int n_grid_x, const int n_grid_y, const int n_grid_z);
   void setSceneBounds(const Eigen::Ref<const Eigen::Vector3d> &scene_bound_min,
-                                       const Eigen::Ref<const Eigen::Vector3d> &scene_bound_max);
+                      const Eigen::Ref<const Eigen::Vector3d> &scene_bound_max);
   
 private:
   // Depth camera
