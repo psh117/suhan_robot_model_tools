@@ -40,3 +40,5 @@ class TRACIK(object):
     def set_tolerance_bounds(self, tol):
         self.tracik.set_tolerance_bounds(tol)
 
+    def set_solve_type(self, type):
+        self.tracik.set_solve_type(type)

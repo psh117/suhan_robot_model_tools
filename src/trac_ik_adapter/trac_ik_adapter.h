@@ -37,6 +37,7 @@ public:
   void setToleranceBounds(double px, double py, double pz, double ox, double oy, double oz);
   unsigned int getNumJoints() const { return n_joint_; }
   bool isValid(const Eigen::Ref<const Eigen::VectorXd> &q);
+  void setSolveType(const std::string & type);
 
 protected:
   unsigned int n_joint_ {0};

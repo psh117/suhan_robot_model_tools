@@ -23,10 +23,10 @@ void MultiChainConstraintFunctions::setNames(const std::vector<std::string> & na
   
   assert(n == n_);
 
-  for (int i=0; i<robot_num; ++i)
-  {
-    std::cout << names_[i] << " and " << q_lengths_[i] << std::endl;
-  }
+  // for (int i=0; i<robot_num; ++i)
+  // {
+  //   std::cout << names_[i] << " and " << q_lengths_[i] << std::endl;
+  // }
 
   lb_.resize(n_);
   ub_.resize(n_);

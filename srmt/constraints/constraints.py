@@ -182,6 +182,8 @@ class OrientationConstraint(ConstraintBase, ConstraintIKBase):
         self.dim_constraint = 2
         self.dim_constraint_ik = 5
 
+        self.arm_dofs = arm_dofs
+
         if constraint_start_index is None:
             # super().__init__('OrientationConstraint', dim_constraint_ik=5)
             arm_dof = sum(arm_dofs)
@@ -234,11 +236,14 @@ class OrientationConstraint(ConstraintBase, ConstraintIKBase):
 
 class MultiChainConstraint(ConstraintBase, ConstraintIKBase):
     def __init__(self, arm_names, base_link, ee_links, arm_dofs=[], constraint_start_index=None, constraint_end_index=None, desc='/robot_description', planning_scene=None, planning_scene_name='/planning_scenes_suhan', **kwargs):
+
+        self.arm_dofs = arm_dofs
         if constraint_end_index is None:
             super(MultiChainConstraint, self).__init__('MultiChainConstraint', dim_constraint=6*(len(arm_names)-1))
 
             self.dim_constraint = 6*(len(arm_names)-1)
             self.dim_constraint_ik = 6*len(arm_names)
+
 
             arm_dof = sum(arm_dofs)
 
@@ -396,6 +401,8 @@ class MultiChainConstraint(ConstraintBase, ConstraintIKBase):
 
 class MultiChainFixedOrientationConstraint(ConstraintBase, ConstraintIKBase):
     def __init__(self, arm_names, base_link, ee_links, arm_dofs=[], axis=0, orientation_offset=np.identity(3), constraint_start_index=None, constraint_end_index=None, desc='/robot_description', planning_scene=None, planning_scene_name='/planning_scenes_suhan', **kwargs):
+        
+        self.arm_dofs = arm_dofs
         if constraint_end_index is None:
             
             super(MultiChainFixedOrientationConstraint, self).__init__('MultiChainFixedOrientationConstraint', dim_constraint=6*(len(arm_names)-1)+2)

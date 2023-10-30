@@ -18,8 +18,8 @@ void DualChainConstraintsFunctions::setNames(const std::string & name1, const st
     q_lengths_[i] = robot_models_[names_[i]]->getNumJoints();
     n += q_lengths_[i];
   }
-  std::cout << names_[0] << " and " << names_[1] << std::endl
-  << "q len: " << q_lengths_[0] << " and " << q_lengths_[1] << std::endl;
+  // std::cout << names_[0] << " and " << names_[1] << std::endl
+  // << "q len: " << q_lengths_[0] << " and " << q_lengths_[1] << std::endl;
 
   assert(n == n_);
   lb_.resize(n_);
@@ -31,7 +31,7 @@ void DualChainConstraintsFunctions::setNames(const std::string & name1, const st
     ub_.segment(cur_idx, q_lengths_[i]) = robot_models_[names_[i]]->getUpperBound();
     cur_idx += q_lengths_[i];
   }
-  std::cout << "lb: " << lb_.transpose() << "\nub: " << ub_.transpose() << std::endl;
+  // std::cout << "lb: " << lb_.transpose() << "\nub: " << ub_.transpose() << std::endl;
 }
 
 void DualChainConstraintsFunctions::setChain(const Eigen::Ref<const Eigen::Vector3d> &pos, const Eigen::Ref<const Eigen::Vector4d> &quat){
