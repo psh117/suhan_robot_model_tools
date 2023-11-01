@@ -1,5 +1,5 @@
 from suhan_robot_model_tools.suhan_robot_model_tools_wrapper_cpp import VisualSim, isometry_to_vectors, vectors_to_isometry
-from .planning_scene import PlanningScene
+from .planning_scene import PlanningSceneLight
 import rospy
 import copy
 import numpy as np
@@ -12,7 +12,7 @@ class VisualSimulator(object):
         self.vs.set_grid_resolution(n_grid)
         pass
 
-    def load_scene(self, planning_scene : PlanningScene):
+    def load_scene(self, planning_scene : PlanningSceneLight):
         self.vs.load_scene(planning_scene.pc.get_planning_scene())
 
     def set_cam_pose(self, pos, quat):
@@ -65,10 +65,10 @@ class VisualSimulator(object):
         Returns:
             np.ndarray: (n_grids[0], n_grids[1], n_grids[2]) matrix
         """
+        obj_pose = vectors_to_isometry(obj_pos, obj_quat)
+        return_vec = self.vs.generate_local_voxel_occupancy(point_cloud_matrix, obj_pose, obj_bound_min, obj_bound_max, n_grids, near_distance, fill_occluded_voxels)
 
-        return_vec = self.vs.generate_local_voxel_occupancy(point_cloud_matrix, obj_pos, obj_quat, obj_bound_min, obj_bound_max, n_grids, near_distance, fill_occluded_voxels)
-
-        return return_vec.reshape(n_grids[0], n_grids[1], n_grids[2])
+        return return_vec.reshape(int(n_grids[0]), int(n_grids[1]), int(n_grids[2]))
 
     def set_scene_bounds(self, scene_bound_min, scene_bound_max):
         return self.vs.set_scene_bounds(scene_bound_min, scene_bound_max)

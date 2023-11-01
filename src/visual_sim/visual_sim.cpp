@@ -246,26 +246,31 @@ Eigen::VectorXi VisualSim::generateVoxelOccupancy()
 }
 
 
-Eigen::VectorXi VisualSim::generateLocalVoxelOccupancy(const Eigen::Ref<const Eigen::Matrix<double, -1, 3> > &point_cloud_matrix, 
-                                                       const Eigen::Ref<const Eigen::Vector3d> &obj_pos, 
-                                                       const Eigen::Ref<const Eigen::Vector4d> &obj_quat, 
-                                                       const Eigen::Array3d &obj_bound_min,
-                                                       const Eigen::Array3d &obj_bound_max,
-                                                       const Eigen::Array3i &n_grids,
+Eigen::VectorXi VisualSim::generateLocalVoxelOccupancy(const Eigen::MatrixXd &point_cloud_matrix, 
+                                                       const Eigen::Isometry3d& obj_pose,
+                                                       const Eigen::Ref<const Eigen::Vector3d> &obj_bound_min_vec,
+                                                       const Eigen::Ref<const Eigen::Vector3d> &obj_bound_max_vec,
+                                                       const Eigen::Ref<const Eigen::Vector3d> &n_grids_vec, 
                                                        double near_distance,
                                                        bool fill_occluded_voxels)
 {
-  Eigen::Isometry3d obj_pose = vectorsToIsometry(obj_pos, obj_quat);
-  Eigen::Array3d lengths, resolutions, resolutions_inv;
+  auto &obj_bound_min = obj_bound_min_vec.array();
+  auto &obj_bound_max = obj_bound_max_vec.array();
+  auto &n_grids = n_grids_vec.array().cast<int>();
 
-  lengths = obj_bound_max - obj_bound_min;
-  resolutions = lengths / n_grids.cast<double>();
-  resolutions_inv = 1. / resolutions;
-  
+  Eigen::Array3i obj_bound_idx_min, obj_bound_idx_max;
+  Eigen::Array3d lengths, resolutions, resolutions_inv;
   Eigen::Array3d local_occu_bounding_coord_min, local_occu_bounding_coord_max;
 
   local_occu_bounding_coord_min = obj_bound_min - near_distance;
   local_occu_bounding_coord_max = obj_bound_max + near_distance;
+
+  lengths = local_occu_bounding_coord_max - local_occu_bounding_coord_min;
+  resolutions = lengths / n_grids.cast<double>();
+  resolutions_inv = 1. / resolutions;
+
+  obj_bound_idx_min = ((obj_bound_min - local_occu_bounding_coord_min) * resolutions_inv).cast<int>();
+  obj_bound_idx_max = ((obj_bound_max - local_occu_bounding_coord_min) * resolutions_inv).cast<int>();
 
   assert((local_occu_bounding_coord_min < local_occu_bounding_coord_max).all());
 
@@ -275,20 +280,23 @@ Eigen::VectorXi VisualSim::generateLocalVoxelOccupancy(const Eigen::Ref<const Ei
   Eigen::Array3d obj_camera_point = obj_pose.inverse() * cam_pose_.translation();
   for (int i=0; i<point_cloud_matrix.rows(); ++i) 
   {
-    Eigen::Array3d global_point = cam_pose_ * point_cloud_matrix.row(i).transpose();
+    Eigen::Vector3d point = point_cloud_matrix.row(i).transpose();
+    Eigen::Vector3d global_point = cam_pose_ * point;
     Eigen::Array3d obj_point = obj_pose.inverse() * global_point;
     
-    bool out_of_bound = false;
+    bool out_of_bound = true;
 
-    if ((obj_point > local_occu_bounding_coord_min).any() || 
-        (obj_point < local_occu_bounding_coord_max).any())
+    if (obj_point.hasNaN()) continue;
+
+    if ((obj_point < local_occu_bounding_coord_max).all() &&
+        (obj_point > local_occu_bounding_coord_min).all())
     {
-      out_of_bound = true;
+      out_of_bound = false;
     }
 
     if (out_of_bound) continue;
     
-    Eigen::Vector3i indices;
+    Eigen::Array3i indices;
 
     indices = ((obj_point - local_occu_bounding_coord_min) * resolutions_inv).cast<int>();
 
@@ -373,6 +381,18 @@ Eigen::VectorXi VisualSim::generateLocalVoxelOccupancy(const Eigen::Ref<const Ei
     } // end if of fill_occluded_voxels
   } // end for (int i=0; i<point_cloud_matrix.rows(); ++i)
 
+  // mark object pose in voxel grid
+  for (int i=obj_bound_idx_min[0]; i<=obj_bound_idx_max[0]; ++i) 
+  {
+    for (int j=obj_bound_idx_min[1]; j<=obj_bound_idx_max[1]; ++j) 
+    {
+      for (int k=obj_bound_idx_min[2]; k<=obj_bound_idx_max[2]; ++k) 
+      {
+        if (voxel_grid(i,j,k) == 0) continue;
+        voxel_grid(i,j,k) = - voxel_grid(i,j,k);
+      }
+    }
+  }
   // write voxel in vector
   Eigen::VectorXi voxel_vector;
   voxel_vector.resize(n_grids[0] * n_grids[1] * n_grids[2]);
