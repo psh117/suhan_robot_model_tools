@@ -33,7 +33,7 @@ namespace gds = gl_depth_sim;
 class VisualSim
 {
 public:
-  VisualSim();
+  VisualSim(int width, int height, double fx, double fy, double z_near, double z_far);
 
   void setCamPos(const Eigen::Ref<const Eigen::Vector3d> &pos);
   void setCamPose(const Eigen::Isometry3d &cam_pose);
@@ -44,6 +44,7 @@ public:
   Eigen::MatrixXd generatePointCloudMatrix();
   Eigen::VectorXi generateLocalVoxelOccupancy(const Eigen::MatrixXd &point_cloud_matrix, 
                                               const Eigen::Isometry3d& obj_pose,
+                                              const Eigen::Ref<const Eigen::Vector3d> &cam_pos,
                                               const Eigen::Ref<const Eigen::Vector3d> &obj_bound_min,
                                               const Eigen::Ref<const Eigen::Vector3d> &obj_bound_max,
                                               const Eigen::Ref<const Eigen::Vector3d> &n_grids, 

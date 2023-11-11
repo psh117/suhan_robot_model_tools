@@ -225,8 +225,7 @@ bool TRACIKAdapter::solve(const Eigen::Ref<const Eigen::VectorXd> &q0, const Eig
     solution = result_q.data;
     return true;
   }
-
-  std::cout << "solve error. e: " << e << std::endl;
+  // std::cout << "solve error. e: " << e << std::endl;
   solution = result_q.data;
   return false;
 }

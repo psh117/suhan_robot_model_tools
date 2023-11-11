@@ -6,15 +6,15 @@
  * Thanks to the authors for making their code available!
 */
 
-VisualSim::VisualSim()
+VisualSim::VisualSim(int width, int height, double fx, double fy, double z_near, double z_far)
 {
-   // azure
-  cam_props_.width = 512;
-  cam_props_.height = 512;
-  cam_props_.fx = 550.0;
-  cam_props_.fy = 550.0;
-  cam_props_.z_near = 0.25;
-  cam_props_.z_far = 2.88;
+  cam_props_.width = width;
+  cam_props_.height = height;
+  cam_props_.fx = fx;
+  cam_props_.fy = fy;
+  cam_props_.z_near = z_near;
+  cam_props_.z_far = z_far;
+
   cam_props_.cx = cam_props_.width / 2.0;
   cam_props_.cy = cam_props_.height / 2.0;
   sim_ = std::make_shared<gds::SimDepthCamera>(cam_props_);
@@ -147,9 +147,9 @@ Eigen::MatrixXd VisualSim::generatePointCloudMatrix()
   Eigen::MatrixXd cloud_matrix(cloud->size(), 3);
   for (int i = 0; i < cloud->size(); ++i)
   {
-    cloud_matrix(i, 0) = (*cloud)[i].x;
-    cloud_matrix(i, 1) = (*cloud)[i].y;
-    cloud_matrix(i, 2) = (*cloud)[i].z;
+    cloud_matrix.row(i) = cam_pose_ * Eigen::Vector3d{(*cloud)[i].x, 
+                                                      (*cloud)[i].y, 
+                                                      (*cloud)[i].z};
   }
   return cloud_matrix;
 }
@@ -246,8 +246,24 @@ Eigen::VectorXi VisualSim::generateVoxelOccupancy()
 }
 
 
+/**
+ * @brief Generate local voxel occupancy
+ * 
+ * @param point_cloud_matrix (n_points, 3) point cloud matrix (wrt global frame)
+ * @param obj_pose object pose
+ * @param obj_bound_min_vec object bound min vector (with respect to object frame)
+ * @param obj_bound_max_vec object bound max vector (with respect to object frame)
+ * @param n_grids_vec number of grids vector
+ * @param near_distance near distance
+ * @param fill_occluded_voxels  whether to fill occluded voxels
+ * 
+ * @return Eigen::VectorXi Flattened voxel occupancy vector (n_grids_[0] * n_grids_[1] * n_grids_[2])
+ *               2: occluded, 1: occupied, 0: free, -1 or -2: object area (invert of 1 and 2)
+ * 
+*/
 Eigen::VectorXi VisualSim::generateLocalVoxelOccupancy(const Eigen::MatrixXd &point_cloud_matrix, 
                                                        const Eigen::Isometry3d& obj_pose,
+                                                       const Eigen::Ref<const Eigen::Vector3d> &cam_pos,
                                                        const Eigen::Ref<const Eigen::Vector3d> &obj_bound_min_vec,
                                                        const Eigen::Ref<const Eigen::Vector3d> &obj_bound_max_vec,
                                                        const Eigen::Ref<const Eigen::Vector3d> &n_grids_vec, 
@@ -277,12 +293,11 @@ Eigen::VectorXi VisualSim::generateLocalVoxelOccupancy(const Eigen::MatrixXd &po
   voxel_grid.resize(n_grids[0],n_grids[1],n_grids[2]);
   voxel_grid.setZero();
 
-  Eigen::Array3d obj_camera_point = obj_pose.inverse() * cam_pose_.translation();
+  Eigen::Array3d obj_camera_point = obj_pose.inverse() * cam_pos;
   for (int i=0; i<point_cloud_matrix.rows(); ++i) 
   {
     Eigen::Vector3d point = point_cloud_matrix.row(i).transpose();
-    Eigen::Vector3d global_point = cam_pose_ * point;
-    Eigen::Array3d obj_point = obj_pose.inverse() * global_point;
+    Eigen::Array3d obj_point = obj_pose.inverse() * point;
     
     bool out_of_bound = true;
 
@@ -388,7 +403,8 @@ Eigen::VectorXi VisualSim::generateLocalVoxelOccupancy(const Eigen::MatrixXd &po
     {
       for (int k=obj_bound_idx_min[2]; k<=obj_bound_idx_max[2]; ++k) 
       {
-        if (voxel_grid(i,j,k) == 0) continue;
+        if (voxel_grid(i,j,k) <= 0) continue;
+
         voxel_grid(i,j,k) = - voxel_grid(i,j,k);
       }
     }

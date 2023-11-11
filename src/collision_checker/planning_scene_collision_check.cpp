@@ -182,8 +182,11 @@ void PlanningSceneCollisionCheck::addMeshFromFile(const std::string & file_name,
   moveit_msgs::CollisionObject co;
   co.header.frame_id = obs_frame_id_;
   co.id = id;
+  geometry_msgs::Pose empty_pose;
+  empty_pose.orientation.w = 1.0;
   co.meshes.push_back(shape_msgs_mesh);
-  co.mesh_poses.push_back(pose);
+  co.mesh_poses.push_back(empty_pose);
+  co.pose = pose;
   co.operation = moveit_msgs::CollisionObject::ADD;
 
 {

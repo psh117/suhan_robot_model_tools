@@ -261,7 +261,7 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
 
   bp::class_<std::shared_ptr<planning_scene::PlanningScene>, boost::noncopyable>("PlanningScene", bp::no_init);
 
-  bp::class_<VisualSim, boost::noncopyable>("VisualSim")
+  bp::class_<VisualSim, boost::noncopyable>("VisualSim", bp::init<int, int, double, double, double, double>())
       .def("lookat", &VisualSim::lookat)
       .def("set_cam_pose", &VisualSim::setCamPose)
       .def("set_cam_pos", &VisualSim::setCamPos)
