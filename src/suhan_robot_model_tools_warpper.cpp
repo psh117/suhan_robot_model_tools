@@ -237,7 +237,7 @@ BOOST_PYTHON_MODULE(suhan_robot_model_tools_wrapper_cpp)
   void (PlanningSceneCollisionCheck::*updateObjectPose1)(const std::string &id,
               const Eigen::Ref<const Eigen::Vector3d> &pos, const Eigen::Ref<const Eigen::Vector4d> &quat) = &PlanningSceneCollisionCheck::updateObjectPose;
 
-  bp::class_<PlanningSceneCollisionCheck, boost::noncopyable>("PlanningSceneCollisionCheck", bp::init<const std::string&>())
+  bp::class_<PlanningSceneCollisionCheck, boost::noncopyable>("PlanningSceneCollisionCheck", bp::init<const std::string&, const std::string&>())
       .def("set_group_names_and_dofs", &PlanningSceneCollisionCheck::setGroupNamesAndDofs)
       .def("is_valid", &PlanningSceneCollisionCheck::isValid)
       .def("is_current_valid", &PlanningSceneCollisionCheck::isCurrentValid)

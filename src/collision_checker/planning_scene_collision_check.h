@@ -6,6 +6,7 @@
 // MoveIt
 #include <moveit/robot_model_loader/robot_model_loader.h>
 #include <moveit/planning_scene/planning_scene.h>
+#include <moveit/planning_scene_monitor/planning_scene_monitor.h>
 #include <moveit/kinematic_constraints/utils.h>
 
 #include <geometric_shapes/shape_operations.h>
@@ -24,7 +25,7 @@ if(debug_file_.is_open()) \
 class PlanningSceneCollisionCheck
 {
 public:
-  PlanningSceneCollisionCheck(const std::string & topic_name = "");
+  PlanningSceneCollisionCheck(const std::string & topic_name, const std::string & robot_description_param = "robot_description");
   void setGroupNamesAndDofs(const std::vector<std::string> &arm_name, const std::vector<int> & dofs);
   bool isValid(const Eigen::Ref<const Eigen::VectorXd> &q) const;
   bool isCurrentValid() const;
@@ -84,6 +85,8 @@ private:
   // std::array<std::string, 2> move_group_names_ {"panda_left", "panda_right"};
   robot_model::RobotModelPtr robot_model_;
   planning_scene::PlanningScenePtr planning_scene_;
+  planning_scene_monitor::PlanningSceneMonitorPtr planning_scene_monitor_;
+
   ros::NodeHandle nh_;
   ros::Publisher scene_pub_;
   std::string debug_file_prefix_;

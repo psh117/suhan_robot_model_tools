@@ -9,13 +9,13 @@ from srmt.utils import ros_init
 # ros_init = False
 
 class PlanningSceneLight(object):
-    def __init__(self, topic_name = "/planning_scene", base_link='/base') -> None:
+    def __init__(self, topic_name = "/planning_scene", base_link='/base', robot_description_param='robot_description') -> None:
         """Planning Scene Light
         It does not require full group names and joitn dofs
         """
         ros_init('PlanningScene')
 
-        self.pc = PlanningSceneCollisionCheck(topic_name)
+        self.pc = PlanningSceneCollisionCheck(topic_name, robot_description_param)
         self.pc.set_frame_id(base_link)
         
 
@@ -84,11 +84,11 @@ class PlanningSceneLight(object):
 
 
 class PlanningScene(PlanningSceneLight):
-    def __init__(self, arm_names, arm_dofs, base_link='/base', hand_names=None, hand_joints=[2], hand_open = [[0.0325,0.0325]], hand_closed = [[0.0, 0.0]], topic_name = "/planning_scene", q_init = None, base_q=None, start_index=None, end_index=None):
+    def __init__(self, arm_names, arm_dofs, base_link='/base', hand_names=None, hand_joints=[2], hand_open = [[0.0325,0.0325]], hand_closed = [[0.0, 0.0]], topic_name = "/planning_scene", robot_description_param='robot_description', q_init = None, base_q=None, start_index=None, end_index=None):
         
         ros_init('PlanningScene')
 
-        self.pc = PlanningSceneCollisionCheck(topic_name)
+        self.pc = PlanningSceneCollisionCheck(topic_name, robot_description_param)
         
         self.base_q = base_q
         self.start_index = start_index
