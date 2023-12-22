@@ -4,6 +4,7 @@ import numpy as np
 from srmt.planning_scene import PlanningScene
 from srmt.utils import ros_init
 from srmt.utils import get_pose, get_transform
+from scipy.spatial.transform import Rotation as R
 import time
 
 class ConstraintBase(object):
@@ -13,6 +14,9 @@ class ConstraintBase(object):
         self.dim_constraint = dim_constraint
         self.constraint = None
         self.epsilon = 5e-3
+
+        self.lb = None
+        self.ub = None
 
     def function(self, q):
         if q.dtype != np.double:
@@ -74,6 +78,13 @@ class ConstraintBase(object):
                 continue
             if validity_fn(q):
                 return q
+            
+            if self.lb is not None and np.any(q < self.lb):
+                continue
+
+            if self.ub is not None and np.any(q > self.ub):
+                continue
+            
         return False
 
     def solve_arm_ik(self, arm_name, q0, pos, quat):
@@ -121,7 +132,8 @@ class ConstraintIKBase(object):
         r = self.project_ik(q)
         return r
 
-class DualArmConstraint(ConstraintBase, ConstraintIKBase):
+
+class DualArmConstraint(ConstraintBase, ConstraintIKBase): # deprecated. use MultiChainConstraint
     def __init__(self, name1='panda_arm_1', name2='panda_arm_2', ee1='panda_1_hand', ee2='panda_2_hand', arm_dofs=[], desc='/robot_description', base='base', max_iter=1000, tol=1e-3, planning_scene_name='/planning_scenes_suhan', **kwargs):
         super(DualArmConstraint, self).__init__(name='DualArmConstraint', dim_constraint=6)
         self.dim_constraint = 6
@@ -176,53 +188,48 @@ class DualArmConstraint(ConstraintBase, ConstraintIKBase):
 
 
 class OrientationConstraint(ConstraintBase, ConstraintIKBase):
-    def __init__(self, arm_names, base_link, ee_links, arm_dofs=[7], constraint_start_index=None, constraint_end_index=None, axis=0, orientation_offset=np.identity(3),desc='/robot_description', planning_scene=None, planning_scene_name='/planning_scenes_suhan', **kwargs):
+    def __init__(self, arm_names, base_link, ee_links, arm_dofs=[7], constraint_start_index=None, constraint_end_index=None, axis=0, reversed_axis=False, orientation_offset=np.identity(3),desc='/robot_description', planning_scene=None, **kwargs):
         # axis = 0: x, 1: y, 2: z
+        # reversed_axis: if True, the direction is reversed along the given axis
         super(OrientationConstraint, self).__init__('OrientationConstraint', dim_constraint=2)
         self.dim_constraint = 2
         self.dim_constraint_ik = 5
 
         self.arm_dofs = arm_dofs
+        self.orientation_offset = orientation_offset
+        self.reversed_axis = reversed_axis
+        self.axis = axis
+        self.orientation_vector = np.zeros(3)
+        self.orientation_vector[axis] = 1
 
         if constraint_start_index is None:
-            # super().__init__('OrientationConstraint', dim_constraint_ik=5)
-            arm_dof = sum(arm_dofs)
+            constraint_start_index = 0
+        
+        arm_dof = arm_dofs[constraint_start_index]
 
-            self.constraint = OrientationConstraintFunctions(arm_dof, self.dim_constraint)
-            self.constraint_ik = OrientationConstrainedIK(arm_dof, self.dim_constraint_ik)
-            orientation_vector = np.zeros(3)
-            orientation_vector[axis] = 1
-            for c in [self.constraint, self.constraint_ik]:
-                ik_solver = c.add_trac_ik_adapter(arm_names[0], base_link, ee_links[0], 0.1, 1e-6, desc)
-                c.set_name(arm_names[0])
-                c.set_orientation_vector(orientation_vector)
-                c.set_orientation_offset(orientation_offset)  
-        else:
-            arm_dof = arm_dofs[constraint_start_index]
-
-            self.constraint = OrientationConstraintFunctions(arm_dof, self.dim_constraint)
-            self.constraint_ik = OrientationConstrainedIK(arm_dof, self.dim_constraint_ik)
-            orientation_vector = np.zeros(3)
-            orientation_vector[axis] = 1
-            for c in [self.constraint, self.constraint_ik]:
-                ik_solver = c.add_trac_ik_adapter(arm_names[constraint_start_index], base_link, ee_links[constraint_start_index], 0.1, 1e-6, desc)
-                c.set_name(arm_names[constraint_start_index])
-                c.set_orientation_vector(orientation_vector)
-                c.set_orientation_offset(orientation_offset)  
-                
+        self.constraint = OrientationConstraintFunctions(arm_dof, self.dim_constraint)
+        self.constraint_ik = OrientationConstrainedIK(arm_dof, self.dim_constraint_ik)
+        for c in [self.constraint, self.constraint_ik]:
+            ik_solver = c.add_trac_ik_adapter(arm_names[constraint_start_index], base_link, ee_links[constraint_start_index], 0.1, 1e-6, desc)
+            c.set_name(arm_names[constraint_start_index])
+            c.set_orientation_vector(self.orientation_vector)
+            c.set_orientation_offset(orientation_offset)  
 
         self.ik_solver = ik_solver
+        self.ik_solvers = {arm_names[0]: ik_solver}
+
+        self.arm_names = arm_names
+        self.arm_dofs = arm_dofs
         
         if planning_scene is None:
             self.planning_scene = PlanningScene(arm_names=arm_names, arm_dofs=arm_dofs, base_link=base_link, **kwargs)
-        # self.planning_scene = PlanningScene([name], [7], **kwargs)
 
         self.lb = self.ik_solver.get_lower_bound()
         self.ub = self.ik_solver.get_upper_bound()
     
-    def forward_kinematics(self, q):
+    def forward_kinematics(self, name, q):
         q = q.astype(np.double)
-        iso = self.ik_solver.forward_kinematics(q)
+        iso = self.ik_solvers[name].forward_kinematics(q)
         d = isometry_to_vectors(iso)
         pos = d.first
         quat = d.second
@@ -233,7 +240,35 @@ class OrientationConstraint(ConstraintBase, ConstraintIKBase):
         x = x.astype(np.double)
         self.constraint_ik.set_target_position(x)
 
+    def project(self, q):
+        r = super().project(q)
+        if r is False:
+            return False
+        
+        r = self.check_orientation_side(q)
+        return r
+        
+    def check_orientation_side(self, q):
+        _, quat = self.forward_kinematics(self.arm_names[0], q)
+        r = R.from_quat(quat)
+        local_r = self.orientation_offset @ r.as_matrix()
 
+        if local_r[self.axis, self.axis] > 0.9:
+            # True if not reversed
+            return not self.reversed_axis
+        
+        elif local_r[self.axis, self.axis] < -0.9:
+            # True if reversed
+            return self.reversed_axis
+        
+        else:
+            print('local_r', local_r)
+            print('r', r.as_matrix())
+            print('self.orientation_offset', self.orientation_offset)
+            raise Exception("Something's wrong")
+        
+        return False
+    
 class MultiChainConstraint(ConstraintBase, ConstraintIKBase):
     def __init__(self, arm_names, base_link, ee_links, arm_dofs=[], constraint_start_index=None, constraint_end_index=None, desc='/robot_description', planning_scene=None, planning_scene_name='/planning_scenes_suhan', **kwargs):
 
