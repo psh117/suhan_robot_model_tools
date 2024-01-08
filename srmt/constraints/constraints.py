@@ -460,6 +460,9 @@ class MultiChainFixedOrientationConstraint(ConstraintBase, ConstraintIKBase):
 
         self.constraint = MultiChainWithFixedOrientationConstraint(arm_dof, self.dim_constraint)
 
+        self.constraint.set_orientation_vector(self.orientation_vector)
+        self.constraint.set_orientation_offset(orientation_offset)
+        
         constraints = []
         constraints.append(self.constraint)
 
@@ -496,8 +499,6 @@ class MultiChainFixedOrientationConstraint(ConstraintBase, ConstraintIKBase):
             c.set_max_iterations(2000)
             c.set_tolerance(5e-4)
             c.set_names(nv)
-            c.set_orientation_vector(self.orientation_vector)
-            c.set_orientation_offset(orientation_offset)
 
         self.lb = np.concatenate(lb, axis=0)
         self.ub = np.concatenate(ub, axis=0)
